@@ -6,6 +6,8 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from pathlib import Path
+
 import torch
 import yaml
 from accelerate import Accelerator
@@ -20,9 +22,10 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--config", type=str, default=None)
     p.add_argument("--model", type=str, default="Qwen/Qwen3-1.7B")
-    p.add_argument("--dataset", type=str, default="AI-MO/NuminaMath-CoT")
-    p.add_argument("--n_train_samples", type=int, default=2000)
-    p.add_argument("--max_steps", type=int, default=100)
+    p.add_argument("--dataset", type=str, default="siyanzhao/Openthoughts_math_30k_opsd")
+    p.add_argument("--n_train_samples", type=int, default=0,
+                   help="0 = use full dataset")
+    p.add_argument("--max_steps", type=int, default=300)
     p.add_argument("--n_rollouts", type=int, default=4)
     p.add_argument("--batch_size", type=int, default=2)
     p.add_argument("--lr", type=float, default=5e-6)
@@ -34,6 +37,9 @@ def parse_args():
     p.add_argument("--eval_dataset", type=str, default="aime2024")
     p.add_argument("--eval_steps", type=int, default=25)
     p.add_argument("--wandb_project", type=str, default=None)
+    p.add_argument("--wandb_run_name", type=str, default=None)
+    p.add_argument("--weight_decay", type=float, default=0.01)
+    p.add_argument("--max_grad_norm", type=float, default=1.0)
     p.add_argument("--max_prompt_len", type=int, default=512)
     return p.parse_args()
 
@@ -57,12 +63,10 @@ def main():
         os.makedirs(cfg["output_dir"], exist_ok=True)
         if cfg.get("wandb_project"):
             import wandb
-            wandb.init(project=cfg["wandb_project"], config=cfg, name=os.path.basename(cfg["output_dir"]))
+            run_name = cfg.get("wandb_run_name") or f"opsd_{Path(cfg['output_dir']).name}"
+            wandb.init(project=cfg["wandb_project"], config=cfg, name=run_name)
 
     model_name = cfg["model"]
-    if accelerator.is_main_process:
-        print(f"Loading model: {model_name}")
-
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -75,7 +79,9 @@ def main():
         attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager",
     )
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=0.01)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=cfg["lr"], weight_decay=cfg.get("weight_decay", 0.01)
+    )
     model, optimizer = accelerator.prepare(model, optimizer)
 
     opsd_config = OPSDConfig(
@@ -91,11 +97,11 @@ def main():
         max_prompt_len=cfg.get("max_prompt_len", 512),
         output_dir=cfg["output_dir"],
         wandb_project=cfg.get("wandb_project"),
+        max_grad_norm=cfg.get("max_grad_norm", 1.0),
     )
 
     trainer = OPSDTrainer(model, tokenizer, optimizer, accelerator, opsd_config)
 
-    # Load datasets
     train_data = load_train_dataset(cfg["dataset"], n_samples=cfg["n_train_samples"])
     eval_data = []
     if cfg["eval_dataset"] == "aime2024":
@@ -106,15 +112,10 @@ def main():
         eval_data = load_math500_dataset()
 
     if accelerator.is_main_process:
-        print(f"Train samples: {len(train_data)}, Eval samples: {len(eval_data)}")
+        print(f"Base OPSD | model={model_name} | train={len(train_data)} | eval={len(eval_data)}")
 
     collator = MathDataCollator(tokenizer, max_prompt_len=cfg.get("max_prompt_len", 512))
-    loader = DataLoader(
-        train_data,
-        batch_size=cfg["batch_size"],
-        shuffle=True,
-        collate_fn=collator,
-    )
+    loader = DataLoader(train_data, batch_size=cfg["batch_size"], shuffle=True, collate_fn=collator)
     loader = accelerator.prepare(loader)
     loader_iter = iter(loader)
 
@@ -129,11 +130,11 @@ def main():
 
         metrics = trainer.train_step(batch)
 
-        if accelerator.is_main_process and step % 5 == 0:
+        if accelerator.is_main_process:
             print(f"Step {step}: loss={metrics['loss']:.4f}, reward={metrics['reward_mean']:.3f}")
             if cfg.get("wandb_project"):
                 import wandb
-                wandb.log({**metrics, "step": step})
+                wandb.log({"train/" + k: v for k, v in metrics.items()}, step=step)
 
         if eval_data and (step + 1) % cfg["eval_steps"] == 0:
             eval_subset = eval_data[:min(30, len(eval_data))]
@@ -145,14 +146,13 @@ def main():
                     json.dump(results, f, indent=2)
                 if cfg.get("wandb_project"):
                     import wandb
-                    wandb.log({f"eval/{k}": v for k, v in eval_metrics.items()})
+                    wandb.log({"eval/" + k: v for k, v in eval_metrics.items()}, step=step + 1)
 
-    # Save final model
     if accelerator.is_main_process:
         unwrapped = accelerator.unwrap_model(model)
         unwrapped.save_pretrained(cfg["output_dir"])
         tokenizer.save_pretrained(cfg["output_dir"])
-        print(f"Model saved to {cfg['output_dir']}")
+        print(f"Base OPSD model saved to {cfg['output_dir']}")
 
 
 if __name__ == "__main__":

@@ -55,18 +55,34 @@ def load_aime_dataset(years: list[int] = None) -> list[dict]:
     """Load AIME problems."""
     if years is None:
         years = [2024]
+
+    # Primary sources — known to work reliably
+    _PRIMARY = {
+        2024: ("HuggingFaceH4/aime_2024", "train", True),
+        2025: ("yentinglin/aime_2025",    "train", True),
+    }
+    _FALLBACK = {
+        2024: (f"Maxwell-Jia/AIME_2024", "train", False),
+        2025: (f"Maxwell-Jia/AIME_2025", "train", False),
+    }
+
     problems = []
     for year in years:
-        try:
-            ds = load_dataset(f"Maxwell-Jia/AIME_{year}", split="train")
-        except Exception as e:
-            warnings.warn(f"Maxwell-Jia/AIME_{year} not available ({e}); trying HuggingFaceH4 fallback")
-            fallback = "HuggingFaceH4/aime_2024" if year == 2024 else f"yentinglin/aime_{year}"
-            try:
-                ds = load_dataset(fallback, split="train", trust_remote_code=True)
-            except Exception as e2:
-                warnings.warn(f"All AIME_{year} sources failed ({e2}); skipping year {year}")
+        ds = None
+        for repo, split, trust in [_PRIMARY.get(year, (None, None, None)),
+                                    _FALLBACK.get(year, (None, None, None))]:
+            if repo is None:
                 continue
+            try:
+                ds = load_dataset(repo, split=split, trust_remote_code=trust)
+                break
+            except Exception as e:
+                warnings.warn(f"AIME {year}: {repo} failed ({e}); trying next source")
+
+        if ds is None:
+            warnings.warn(f"All sources for AIME {year} failed; skipping")
+            continue
+
         for item in ds:
             problem = item.get("problem") or item.get("question", "")
             solution = str(item.get("answer") or item.get("solution", ""))
