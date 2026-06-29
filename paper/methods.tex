@@ -1,0 +1,390 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{microtype}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+
+\newcommand{\pT}{p_{\mathrm{T}}}
+\newcommand{\pS}{p_{\mathrm{S}}}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\JSD}{\mathrm{JSD}}
+\newcommand{\logpT}{\log p_{\mathrm{T}}}
+\newcommand{\logpS}{\log p_{\mathrm{S}}}
+
+\title{Selective On-Policy Self-Distillation for Mathematical Reasoning:\\
+       Methods and Extensions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+On-Policy Self-Distillation (OPSD) trains a language model by distilling knowledge from a
+privileged version of itself—one that sees a reference solution at inference time—into a
+non-privileged student.  While effective, OPSD applies distillation uniformly across all
+token positions and all rollouts, without regard for whether teacher guidance is
+\emph{beneficial} at each point.  We describe three extensions that address distinct failure
+modes of uniform distillation: (1) \textbf{CH-OPD}, which selects positions where
+the teacher's advantage is locally high; (2) \textbf{FED}, which preserves strategy-level
+diversity that token-level KL tends to collapse; and (3) \textbf{OG-OPD}
+(Outcome-Gated OPD), our primary contribution, which suppresses distillation on
+rollouts the student already solved correctly—avoiding corruption of self-discovered solution
+paths.  OG-OPD requires no additional generation and is orthogonal to, yet theoretically
+complementary with, the SDAR framework~\cite{sdar2025}.
+\end{abstract}
+
+% ============================================================
+\section{Background: On-Policy Self-Distillation (OPSD)}
+\label{sec:opsd}
+% ============================================================
+
+\paragraph{Setup.}
+Let $\mathcal{M}_\theta$ be a language model with parameters $\theta$, and let $(x, s^*)$
+denote a problem–solution pair drawn from a training distribution.  OPSD maintains a
+\emph{single} parameter vector $\theta$ but creates two \emph{input contexts} for the same
+forward pass:
+\begin{align*}
+  c_S &= \texttt{[problem: } x\texttt{]}
+       \quad\text{(student context)},\\
+  c_T &= \texttt{[problem: } x\texttt{, reference solution: } s^*\texttt{]}
+       \quad\text{(teacher context)}.
+\end{align*}
+At each training step, the student samples a completion $y = (y_1,\dots,y_T)$ from
+$\mathcal{M}_\theta(\cdot \mid c_S)$.  Both the student and the teacher then score this
+\emph{same} completion:
+\[
+  \pS_t = \mathcal{M}_\theta(\cdot \mid c_S, y_{<t}), \qquad
+  \pT_t = \mathcal{M}_\theta(\cdot \mid c_T, y_{<t}).
+\]
+The student and teacher share weights $\theta$; only their conditioning contexts differ.
+
+\paragraph{Loss.}
+OPSD minimizes the token-level generalized Jensen--Shannon divergence:
+\begin{equation}
+  \mathcal{L}_{\mathrm{OPSD}}(\theta)
+  = \frac{1}{|\mathcal{T}|}\sum_{t \in \mathcal{T}}
+    D_{\JSD}^{(\beta)}\!\left(\pT_t \,\|\, \pS_t\right),
+  \label{eq:opsd}
+\end{equation}
+where $\mathcal{T}$ is the set of completion token positions (prompt positions are masked
+with label $-100$), and the $\beta$-interpolated JSD is
+\begin{equation}
+  D_{\JSD}^{(\beta)}(p \| q)
+  = \beta\,\KL(p \| m) + (1-\beta)\,\KL(q \| m),
+  \qquad m = \beta p + (1-\beta)q.
+\end{equation}
+Setting $\beta=0$ recovers reverse KL, $\beta=1$ forward KL, and $\beta=0.5$ the symmetric
+JSD.  The paper uses $\beta=0$ (reverse KL, i.e.\ the student mimics the teacher's
+probability mass).
+
+\paragraph{On-policy generation.}
+Because $y$ is sampled from the \emph{current} student at each step, the training
+distribution $\mathcal{M}_\theta(\cdot \mid c_S)$ always matches the model's current
+behavior.  This avoids the distribution-shift problem of offline distillation, where a fixed
+set of teacher completions becomes stale as $\theta$ evolves.
+
+\paragraph{Rollout scoring.}
+Each rollout $y^{(i)}$ is also passed to a symbolic verifier $\mathcal{V}(y^{(i)}, s^*)
+\in \{0,1\}$, producing a binary reward $r_i$.  In the base OPSD formulation the reward is
+tracked for monitoring but \emph{not} used in the distillation loss.
+
+% ============================================================
+\section{Gap 1: Uniform Distillation Ignores Where the Hint Helps}
+\label{sec:ch-opd}
+% ============================================================
+
+OPSD applies Eq.~\eqref{eq:opsd} at every token in every rollout.  However, the reference
+solution $s^*$ changes the teacher's prediction only at a subset of positions—those where
+knowing the answer causally alters the next-token distribution.  At positions where
+$\pT_t \approx \pS_t$ (the student would have predicted similarly anyway), the JSD loss is
+already near zero, so distilling there adds training noise without useful signal.
+
+\subsection{Causal-Hinge OPD (CH-OPD)}
+
+CH-OPD~\cite{ch-opd} introduces a per-position \emph{benefit signal}:
+\begin{equation}
+  B_t = \sum_{a \in \mathcal{V}_t}
+        \bigl[\pT_t(a) - \pS_t(a)\bigr] \cdot \hat{V}(a;\, y_{<t},\, s^*),
+  \label{eq:benefit}
+\end{equation}
+where $\mathcal{V}_t$ is a candidate action set (union of the top-$k$ tokens under $\pT_t$
+and $\pS_t$, plus the sampled token), and $\hat{V}(a;\cdot)$ is an estimate of the expected
+verifier reward when token $a$ is forced at position $t$.  Distillation is applied only at
+positions where $B_t > \tau$:
+\begin{equation}
+  \mathcal{L}_{\mathrm{CH-OPD}}
+  = \frac{1}{|\mathcal{H}|}\sum_{t\,:\,B_t>\tau}
+    D_{\JSD}^{(\beta)}\!\left(\pT_t \,\|\, \pS_t\right),
+  \qquad \mathcal{H} = \{t : B_t > \tau\}.
+\end{equation}
+
+\paragraph{Full benefit estimation (expensive).}
+$\hat{V}(a;\cdot)$ is estimated by branch-probe sampling: for each candidate token $a$,
+prepend $y_{<t} \circ a$ as a forced prefix, generate $n_{\text{probes}}$ short
+continuations, and average the verifier rewards.  This requires $|\mathcal{V}_t| \times
+n_{\text{probes}}$ extra forward passes per selected position, adding 10--20$\times$
+generation overhead per training step.
+
+\paragraph{Logit-divergence proxy (efficient, but a near-no-op).}
+A natural zero-cost proxy replaces $\hat{V}$ with the token-level KL divergence:
+\begin{equation}
+  B_t^{\mathrm{KL}} = \KL\!\left(\pT_t \,\|\, \pS_t\right).
+  \label{eq:kl-proxy}
+\end{equation}
+While this identifies positions where the teacher and student disagree most, it does
+\emph{not} capture whether the teacher's preferred tokens lead to better outcomes.
+Moreover, it is largely \emph{equivalent to standard OPSD}: positions with small
+$\KL(\pT_t\|\pS_t)$ already contribute a small loss in Eq.~\eqref{eq:opsd}, so masking
+them with $B_t^{\mathrm{KL}} \leq \tau$ changes the gradient only marginally.  In practice
+(with default $\tau=0$) the hinge rate is 1.0—all tokens pass—and the method is
+indistinguishable from OPSD.  The genuine novelty of CH-OPD therefore resides entirely in
+the full branch-probe mode.
+
+\paragraph{Relationship to SDAR.}
+SDAR~\cite{sdar2025} applies a soft token-level gate:
+\begin{equation}
+  g_t = \sigma\!\left(\beta_{\mathrm{SDAR}} \cdot \Delta_t\right),
+  \qquad
+  \Delta_t = \logpT(y_t \mid c_T) - \log p_\theta(y_t \mid c_S),
+  \label{eq:sdar-gate}
+\end{equation}
+where $\Delta_t$ is the teacher-minus-student log-probability gap \emph{at the generated
+token} $y_t$.  Unlike Eq.~\eqref{eq:kl-proxy}, the SDAR gate is signed: when
+$\Delta_t < 0$ (the student assigned higher probability to $y_t$ than the teacher did),
+$g_t < 0.5$ and distillation is attenuated.  SDAR uses RL (GRPO) as its primary
+objective and the gated distillation as a small auxiliary term ($\lambda=0.01$); it does not
+use trajectory-level reward to gate the distillation.
+
+% ============================================================
+\section{Gap 2: Token-Level KL Collapses Strategy Diversity}
+\label{sec:fed}
+% ============================================================
+
+OPSD's token-level JSD treats all reasoning strategies as interchangeable: it pushes every
+completion token toward the teacher's distribution, regardless of which high-level solution
+approach the completion follows.  For mathematical reasoning, a single problem often admits
+multiple valid strategies (algebraic manipulation, geometric argument, number-theoretic
+insight, combinatorial counting).  A good policy should maintain probability mass across all
+valid strategies, maximizing pass@$k$.
+
+In practice, when the reference solution $s^*$ reflects one particular strategy, OPSD's
+token-level loss progressively concentrates the student's output distribution on that
+strategy's token patterns, collapsing diversity and reducing pass@$k$.
+
+\subsection{Functional-Equivalence Distillation (FED)}
+
+FED operates at the level of \emph{strategy classes} rather than individual tokens.
+
+\paragraph{Strategy classification.}
+Each rollout $y^{(i)}$ is assigned to a strategy class $c^{(i)} \in \mathcal{C}$
+(e.g., algebra, geometry, number theory, combinatorics, sequences, trigonometry) by
+keyword matching on the solution text.  The verifier reward $r_i$ provides the class-level
+quality signal.
+
+\paragraph{Target distribution.}
+Let $Q(c) \propto \exp(\rho \cdot \bar{r}_c)$ be a Boltzmann distribution over strategy
+classes, where $\bar{r}_c$ is the empirical mean reward within class $c$ and $\rho > 0$ is
+a temperature.  The class-level distillation loss pushes the student's strategy distribution
+toward $Q$:
+\[
+  \mathcal{L}_{\mathrm{class}} = \KL\bigl(Q \,\|\, P_\theta\bigr),
+\]
+where $P_\theta(c)$ is estimated from the rollout frequencies and logits.
+
+\paragraph{Within-class diversity.}
+To prevent collapse \emph{within} a high-reward class, FED adds a regularizer against a
+frozen reference policy $p_{\mathrm{ref}}$ (the model's initial weights):
+\[
+  \mathcal{L}_{\mathrm{within}}
+  = \lambda_{\mathrm{within}}
+    \sum_{c\,:\,\bar{r}_c \geq \tau_{\mathrm{value}}}
+    \KL\!\left(p_\theta(\cdot \mid c_T,\, y^{(i)}) \;\|\; p_{\mathrm{ref}}(\cdot \mid c_S,\, y^{(i)})\right).
+\]
+
+\paragraph{Efficient strategy discovery.}
+The full mode generates $n_{\mathrm{cont}}$ additional continuations per anchor position
+(4--5$\times$ extra generation).  The efficient mode reuses the $n_{\mathrm{rollouts}}$
+completions already sampled during the student rollout phase: their stochastic decoding
+naturally produces distinct strategies, their rewards are already computed, and no extra
+generation is needed.
+
+% ============================================================
+\section{Gap 3: Distilling Successful Rollouts Can Corrupt Self-Discovered Paths}
+\label{sec:og-opd}
+% ============================================================
+
+Both OPSD and the methods above share a common assumption: \emph{all rollouts should be
+distilled toward the teacher}.  We identify a subtle but important failure mode of this
+assumption.
+
+\paragraph{The problem.}
+The teacher's privileged context $c_T$ includes $s^*$, meaning the teacher is anchored to a
+\emph{specific} reference solution style.  When the student independently discovers a
+correct solution (verifier returns $r_i = 1$), that solution may follow a different
+reasoning path or stylistic convention than $s^*$.  Applying OPSD's JSD loss on this
+rollout pushes the student's token distributions toward the teacher's style—even though the
+student's path was \emph{already correct}.  This can:
+\begin{enumerate}
+\item Erase a solution strategy the student self-discovered, reducing diversity.
+\item Introduce gradient noise when the teacher's and student's correct solutions differ in
+      surface form but not in mathematical validity.
+\item Slow convergence by fighting the RL-like signal implicit in correct rollouts.
+\end{enumerate}
+
+\paragraph{The original CH-OPD connection.}
+CH-OPD's benefit signal $B_t$ (Eq.~\ref{eq:benefit}) was designed to detect exactly this:
+when $B_t < 0$, the teacher's preferred tokens lead to \emph{worse} expected outcomes than
+the student's tokens, and distillation is harmful.  However, estimating $B_t$ requires
+expensive branch probing, and the logit-KL proxy misses the value component entirely.  We
+propose a trajectory-level approximation that costs nothing.
+
+\subsection{Outcome-Gated OPD (OG-OPD)}
+
+\paragraph{Formulation.}
+Let $\{(y^{(i)}, r_i)\}_{i=1}^{N}$ be the $N = n_{\mathrm{batch}} \times n_{\mathrm{rollouts}}$
+rollouts generated at a training step, with binary rewards $r_i \in \{0,1\}$.
+OG-OPD reweights the per-rollout distillation loss by the \emph{failure indicator}:
+\begin{equation}
+  \boxed{
+  \mathcal{L}_{\mathrm{OG-OPD}}
+  = \frac{1}{\sum_i (1-r_i)}
+    \sum_{i=1}^{N} (1-r_i)\cdot
+    \frac{1}{|\mathcal{T}_i|}\sum_{t \in \mathcal{T}_i}
+    D_{\JSD}^{(\beta)}\!\left(\pT_t^{(i)} \,\|\, \pS_t^{(i)}\right).
+  }
+  \label{eq:og-opd}
+\end{equation}
+In words: rollouts with $r_i=1$ (student solved the problem) receive zero distillation
+weight; rollouts with $r_i=0$ (student failed) receive full weight.
+
+\paragraph{Intuition.}
+The gate $(1-r_i)$ is a trajectory-level proxy for the CH-OPD benefit: if the student
+succeeded, its deviation from the teacher was either irrelevant or \emph{beneficial}, so we
+should not push it back.  If the student failed, teacher guidance is likely to help.
+
+\paragraph{Emergent curriculum.}
+Early in training, when the model cannot yet solve problems, all $r_i = 0$ and
+Eq.~\eqref{eq:og-opd} reduces to standard OPSD—maximum teacher guidance.  As the model
+improves and some rollouts succeed, distillation concentrates on the remaining failures,
+providing a natural curriculum without any scheduling hyperparameter.
+
+\paragraph{Implementation.}
+OG-OPD requires no architectural changes and no extra forward passes beyond standard OPSD.
+The rewards $\{r_i\}$ are computed by the verifier during the rollout phase, which is
+already part of the OPSD training loop.  The only code change is multiplying each rollout's
+loss contribution by $(1-r_i)$ before averaging.
+
+\paragraph{Edge case.}
+If all rollouts succeed ($\sum_i (1-r_i) = 0$), the distillation loss is undefined.
+In practice, we fall back to standard OPSD in this case (i.e., we set all weights to 1),
+treating a step where the student solves every problem as a signal to maintain the
+teacher's distributional guidance:
+\begin{equation}
+  w_i = \begin{cases}1 - r_i & \text{if } \sum_j (1-r_j) > 0, \\ 1 & \text{otherwise.}\end{cases}
+\end{equation}
+
+% ============================================================
+\section{Comparison of Methods}
+\label{sec:comparison}
+% ============================================================
+
+Table~\ref{tab:comparison} summarizes the four methods along the key axes that distinguish
+them.
+
+\begin{table}[h]
+\centering
+\caption{Comparison of OPSD variants.}
+\label{tab:comparison}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Property} & \textbf{OPSD} & \textbf{CH-OPD} & \textbf{SDAR} & \textbf{OG-OPD (ours)} \\
+\midrule
+Gating level & None & Per-token & Per-token & Per-trajectory \\
+Gating signal & — & $B_t$ (value-weighted) & $\Delta_t$ (log-prob gap) & $r_i$ (verifier reward) \\
+Uses trajectory outcome? & No & Indirectly (via $\hat{V}$) & No & Yes, directly \\
+Extra generation & None & $10$–$20\times$ & None & None \\
+RL objective & No & No & Yes (GRPO primary) & No \\
+Handles wrong teacher? & No & Yes (via $B_t$) & Yes (soft, via $g_t$) & Partially (trajectory-level) \\
+Protects successful student paths? & No & Yes (via $B_t < 0$) & No & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{SDAR vs.\ OG-OPD.}
+The two methods are \emph{orthogonal}: SDAR asks ``at this token, does the teacher
+locally outperform the student?''\ whereas OG-OPD asks ``for this entire rollout, did the
+student succeed?''.  Their gating conditions do not imply each other:
+\begin{itemize}
+  \item A token may have $\Delta_t > 0$ (teacher preferred it locally) even in a
+        \emph{successful} rollout that OG-OPD would suppress.
+  \item A failed rollout that OG-OPD distills fully may contain tokens with $\Delta_t < 0$
+        (student was locally more confident) that SDAR would down-weight.
+\end{itemize}
+A combined method that gates on \emph{both} conditions—$(1-r_i) \cdot g_t$—would address
+both failure modes simultaneously, at no extra generation cost (the $g_t$ computation only
+requires the logits already produced in the OPSD forward passes).
+
+% ============================================================
+\section{Experimental Setup}
+\label{sec:experiments}
+% ============================================================
+
+\paragraph{Model and data.}
+All experiments use \texttt{Qwen3-1.7B} as the base model.  Training data is the OPSD
+paper's dataset \texttt{siyanzhao/Openthoughts\_math\_30k\_opsd} ($\approx$29{,}000
+math olympiad problems with verified solutions).  We train on 2{,}000 randomly sampled
+problems for 300 steps to study training dynamics.
+
+\paragraph{Hyperparameters.}
+Batch size 1 per GPU, 4 rollouts per problem, 4-GPU DDP, gradient accumulation steps 4
+(effective batch: 16 rollouts/step).  Learning rate $5 \times 10^{-6}$, AdamW with weight
+decay 0.01, gradient clipping at 1.0.  Maximum completion length 1024 tokens.
+Gradient checkpointing enabled to reduce activation memory.
+
+\paragraph{Evaluation.}
+We evaluate on AIME 2024 (30 problems) using the paper's protocol: temperature 1.0,
+top\_p 0.8, max\_tokens 32{,}768, 12 samples per problem, vLLM with tensor parallelism 4.
+The primary metric is pass@1 (average fraction correct across samples).
+
+\paragraph{Baselines.}
+\begin{itemize}
+  \item \textbf{OPSD}: base method (Eq.~\ref{eq:opsd}).
+  \item \textbf{OG-OPD}: proposed method (Eq.~\ref{eq:og-opd}).
+  \item \textbf{Qwen3-1.7B (no training)}: baseline from the OPSD paper (11.9\% AIME24
+        avg@12).
+\end{itemize}
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+
+\bibitem{opsd}
+OPSD Authors.
+\newblock On-Policy Self-Distillation for Mathematical Reasoning.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem{ch-opd}
+Internal project.
+\newblock Causal-Hinge OPD: Benefit-Selective Token Distillation.
+\newblock 2025.
+
+\bibitem{sdar}
+SDAR Authors.
+\newblock SDAR: Self-Distilled Agentic Reinforcement Learning.
+\newblock \emph{arXiv:2605.15155}, 2025.
+
+\bibitem{selectkd}
+Huang et al.
+\newblock SelecTKD: Token-Selective Knowledge Distillation via Teacher Entropy.
+\newblock 2025.
+
+\end{thebibliography}
+
+\end{document}
