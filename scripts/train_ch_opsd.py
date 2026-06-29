@@ -22,8 +22,9 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--config", type=str, default=None)
     p.add_argument("--model", type=str, default="Qwen/Qwen3-1.7B")
-    p.add_argument("--dataset", type=str, default="AI-MO/NuminaMath-CoT")
-    p.add_argument("--n_train_samples", type=int, default=2000)
+    p.add_argument("--dataset", type=str, default="siyanzhao/Openthoughts_math_30k_opsd")
+    p.add_argument("--n_train_samples", type=int, default=0,
+                   help="0 = use full dataset (default for OPSD paper dataset)")
     p.add_argument("--max_steps", type=int, default=100)
     p.add_argument("--n_rollouts", type=int, default=4)
     p.add_argument("--batch_size", type=int, default=2)

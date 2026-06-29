@@ -24,23 +24,30 @@ TEACHER_PROMPT_TEMPLATE = (
 
 
 def load_train_dataset(
-    name: str = "AI-MO/NuminaMath-CoT",
-    n_samples: int = 2000,
+    name: str = "siyanzhao/Openthoughts_math_30k_opsd",
+    n_samples: int = 0,
     seed: int = 42,
 ) -> list[dict]:
-    """Load training problems with solutions."""
+    """Load training problems with solutions.
+
+    For siyanzhao/Openthoughts_math_30k_opsd (OPSD paper dataset), filters to
+    correct==True examples only. n_samples=0 means use the full dataset.
+    """
     ds = load_dataset(name, split="train")
     ds = ds.shuffle(seed=seed)
-    if n_samples > 0:
-        ds = ds.select(range(min(n_samples, len(ds))))
 
-    # Normalize column names
     problems = []
     for item in ds:
+        # Filter out incorrect solutions when the field is present
+        if "correct" in item and str(item["correct"]).lower() != "true":
+            continue
         problem = item.get("problem") or item.get("question") or item.get("input", "")
         solution = item.get("solution") or item.get("answer") or item.get("output", "")
         if problem and solution:
             problems.append({"problem": problem, "solution": solution})
+
+    if n_samples > 0:
+        problems = problems[:n_samples]
     return problems
 
 

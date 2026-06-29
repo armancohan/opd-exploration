@@ -1,77 +1,44 @@
 #!/bin/bash
-# Evaluate Qwen3-1.7B base model on AIME24, AIME25, HMMT25
-# Runs three evaluations in parallel using different GPU pairs.
-# Expected results (from OPSD paper, thinking mode, Avg@12):
-#   AIME24: ~51.5%   AIME25: ~36.7%   HMMT25: ~23.1%
-# Non-thinking mode, Avg@12:
-#   AIME24: ~11.9%   AIME25: ~9.2%    HMMT25: ~5.0%
+# Baseline eval matching OPSD paper protocol exactly.
+# Uses vLLM with enforce_eager=True, VLLM_USE_V1=0 to bypass flashinfer.
+#
+# Expected results (Avg@12, nonthinking):
+#   Qwen3-1.7B: AIME24=11.9%  AIME25=9.2%  HMMT25=5.0%
+#
+# Usage:
+#   bash eval/run_baseline_eval.sh                        # nonthinking, all 3 datasets
+#   bash eval/run_baseline_eval.sh Qwen/Qwen3-1.7B thinking
+#   bash eval/run_baseline_eval.sh Qwen/Qwen3-4B nonthinking
 
 MODEL="${1:-Qwen/Qwen3-1.7B}"
-MODE="${2:-thinking}"  # "thinking" or "nonthinking"
-VAL_N="${3:-12}"
-MAX_TOKENS="${4:-16384}"  # Use 38912 to match OPSD paper exactly (slower)
+MODE="${2:-nonthinking}"
+TP="${3:-4}"
 OUTPUT_DIR="eval/results"
-
 mkdir -p "$OUTPUT_DIR"
 
-echo "============================================================"
-echo "Baseline evaluation: $MODEL"
-echo "Mode: $MODE  |  Val-N: $VAL_N  |  Max tokens: $MAX_TOKENS"
-echo "============================================================"
-
 THINKING_FLAG=""
-if [ "$MODE" = "thinking" ]; then
-    THINKING_FLAG="--thinking"
-fi
+[ "$MODE" = "thinking" ] && THINKING_FLAG="--thinking"
 
-# Run all three datasets in parallel on different GPU groups (2 GPUs each)
-CUDA_VISIBLE_DEVICES=0,1 python eval/evaluate.py \
-    --model "$MODEL" \
-    --dataset aime24 \
-    --val_n "$VAL_N" \
-    $THINKING_FLAG \
-    --temperature 1.0 \
-    --max_new_tokens "$MAX_TOKENS" \
-    --tp 2 \
-    --output_dir "$OUTPUT_DIR" &
-PID1=$!
+export VLLM_USE_V1=0
+export NCCL_P2P_DISABLE=1
 
-CUDA_VISIBLE_DEVICES=2,3 python eval/evaluate.py \
-    --model "$MODEL" \
-    --dataset aime25 \
-    --val_n "$VAL_N" \
-    $THINKING_FLAG \
-    --temperature 1.0 \
-    --max_new_tokens "$MAX_TOKENS" \
-    --tp 2 \
-    --output_dir "$OUTPUT_DIR" &
-PID2=$!
+echo "============================================================"
+echo "Baseline eval: $MODEL | $MODE | tp=$TP"
+echo "============================================================"
 
-CUDA_VISIBLE_DEVICES=4,5 python eval/evaluate.py \
-    --model "$MODEL" \
-    --dataset hmmt25 \
-    --val_n "$VAL_N" \
-    $THINKING_FLAG \
-    --temperature 1.0 \
-    --max_new_tokens "$MAX_TOKENS" \
-    --tp 2 \
-    --output_dir "$OUTPUT_DIR" &
-PID3=$!
-
-wait $PID1
-STATUS1=$?
-wait $PID2
-STATUS2=$?
-wait $PID3
-STATUS3=$?
+# Run 3 datasets sequentially on the same 4-GPU set
+for DATASET in aime24 aime25 hmmt25; do
+    echo ""
+    echo "--- $DATASET ---"
+    CUDA_VISIBLE_DEVICES=0,1,2,3 python eval/evaluate.py \
+        --model "$MODEL" \
+        --dataset "$DATASET" \
+        --val_n 12 \
+        $THINKING_FLAG \
+        --tp "$TP" \
+        --output_dir "$OUTPUT_DIR"
+done
 
 echo ""
-echo "============================================================"
-echo "BASELINE EVAL COMPLETE"
-echo "============================================================"
+echo "Summarizing..."
 python eval/summarize_results.py "$OUTPUT_DIR" --model "$MODEL" --mode "$MODE"
-
-if [ $STATUS1 -ne 0 ] || [ $STATUS2 -ne 0 ] || [ $STATUS3 -ne 0 ]; then
-    echo "WARNING: one or more evaluations had non-zero exit codes"
-    exit 1
-fi
