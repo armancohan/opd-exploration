@@ -78,6 +78,7 @@ def main():
         trust_remote_code=True,
         attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager",
     )
+    model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
 
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=cfg["lr"], weight_decay=cfg.get("weight_decay", 0.01)
