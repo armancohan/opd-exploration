@@ -47,6 +47,9 @@ def parse_args():
     p.add_argument("--n_probes", type=int, default=2)
     p.add_argument("--max_probe_tokens", type=int, default=150)
     p.add_argument("--tau_benefit", type=float, default=0.0)
+    p.add_argument("--use_logit_benefit", action=argparse.BooleanOptionalAction, default=True,
+                   help="Use token-level KL as hinge benefit proxy (fast). "
+                        "--no-use_logit_benefit falls back to original probe sampling.")
     return p.parse_args()
 
 
@@ -106,6 +109,7 @@ def main():
         n_probes=cfg.get("n_probes", 2),
         max_probe_tokens=cfg.get("max_probe_tokens", 150),
         tau_benefit=cfg.get("tau_benefit", 0.0),
+        use_logit_benefit=cfg.get("use_logit_benefit", True),
         max_grad_norm=cfg.get("max_grad_norm", 1.0),
     )
 

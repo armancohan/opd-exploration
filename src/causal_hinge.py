@@ -23,15 +23,17 @@ class CHConfig(OPSDConfig):
     # TopK_S ∪ TopK_T can produce up to n_candidates*2 unique tokens; this cap
     # prevents an unbounded candidate set when distributions are very spread.
     max_candidates_multiplier: int = 2
+    # Efficient benefit estimation: use token-level KL(p_T||p_S) as benefit proxy
+    # instead of probe sampling. Eliminates extra generation; ~2x step speedup.
+    # Set to False to use the original branch-probe method.
+    use_logit_benefit: bool = True
 
 
 def _token_kl(student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
-    """Per-token KL divergence, shape [T]."""
+    """Per-token KL(teacher||student) divergence, shape [T]."""
     log_ps = F.log_softmax(student_logits, dim=-1)
     log_pt = F.log_softmax(teacher_logits, dim=-1)
-    # KL(teacher || student) per token: sum over vocab
-    kl = F.kl_div(log_ps, log_pt, reduction="none", log_target=True).sum(dim=-1)
-    return kl
+    return F.kl_div(log_ps, log_pt, reduction="none", log_target=True).sum(dim=-1)
 
 
 class CausalHingeOPSD(OPSDTrainer):
@@ -71,7 +73,7 @@ class CausalHingeOPSD(OPSDTrainer):
         n_probes: int | None = None,
         max_cont_tokens: int | None = None,
     ) -> float:
-        """Compute the signed hinge benefit B_t at a single position."""
+        """Compute the signed hinge benefit B_t at a single position via probe sampling."""
         if n_candidates is None:
             n_candidates = self.ch_config.n_candidates
         if n_probes is None:
@@ -88,7 +90,7 @@ class CausalHingeOPSD(OPSDTrainer):
         # Candidate set: TopK_S ∪ TopK_T ∪ {sampled_token}
         top_s = torch.topk(ps, k=min(n_candidates, ps.shape[0])).indices
         top_t = torch.topk(pt, k=min(n_candidates, pt.shape[0])).indices
-        sampled_token = prefix_ids[position].unsqueeze(0) if position < prefix_ids.shape[0] else top_s[:1]
+        sampled_token = prefix_ids[position].unsqueeze(0).to(device) if position < prefix_ids.shape[0] else top_s[:1]
         candidates = torch.unique(torch.cat([top_s, top_t, sampled_token]))
         candidates = candidates[:n_candidates * self.ch_config.max_candidates_multiplier]
 
@@ -160,42 +162,47 @@ class CausalHingeOPSD(OPSDTrainer):
 
         return B_t
 
-    def train_step(self, batch: dict) -> dict:
-        """CH-OPD training step with hinge masking."""
-        problems = batch["problems"]
-        solutions = batch["solutions"]
+    def _build_logit_hinge_mask(
+        self,
+        student_logits_full: torch.Tensor,
+        teacher_logits_full: torch.Tensor,
+        shifted_labels: torch.Tensor,
+        rollouts: list[dict],
+    ) -> tuple[torch.Tensor, int, int]:
+        """Efficient hinge mask: gate on token-level KL(p_T||p_S) > tau.
 
-        self.model.eval()
-        rollouts = self.generate_rollouts(problems, solutions)
-        self.model.train()
-
-        if not rollouts:
-            warnings.warn(f"Step {self.step}: rollout generation returned empty — skipping update")
-            return {"loss": 0.0, "reward_mean": 0.0}
-
-        student_ids, student_mask, labels = self._build_student_inputs(rollouts)
-        teacher_ids, teacher_mask, _ = self._build_teacher_inputs(rollouts)
-
-        # Student and teacher logits
-        student_out = self.model(input_ids=student_ids, attention_mask=student_mask)
-        student_logits_full = student_out.logits[:, :-1, :]
-
-        with torch.no_grad():
-            teacher_out = self.model(input_ids=teacher_ids, attention_mask=teacher_mask)
-            teacher_logits_full = teacher_out.logits[:, :-1, :]
-
-        shifted_labels = labels[:, 1:]
-        min_len = min(student_logits_full.shape[1], teacher_logits_full.shape[1], shifted_labels.shape[1])
-        student_logits_full = student_logits_full[:, :min_len, :]
-        teacher_logits_full = teacher_logits_full[:, :min_len, :]
-        shifted_labels = shifted_labels[:, :min_len]
-
-        # Build hinge mask: [B, T]
+        Returns (hinge_mask [B,T], total_probed, total_positive).
+        """
         hinge_mask = torch.zeros_like(shifted_labels, dtype=torch.bool)
         total_probed = 0
         total_positive = 0
+        tau = self.ch_config.tau_benefit
 
-        device = self.accelerator.device
+        for i in range(len(rollouts)):
+            sl = student_logits_full[i].detach()
+            tl = teacher_logits_full[i].detach()
+            lab = shifted_labels[i]
+
+            label_mask = lab != -100
+            kl = _token_kl(sl, tl)  # [T], KL(teacher||student) per token
+            hinge_mask[i] = (kl > tau) & label_mask
+
+            total_probed += label_mask.sum().item()
+            total_positive += hinge_mask[i].sum().item()
+
+        return hinge_mask, total_probed, total_positive
+
+    def _build_probe_hinge_mask(
+        self,
+        student_logits_full: torch.Tensor,
+        teacher_logits_full: torch.Tensor,
+        shifted_labels: torch.Tensor,
+        rollouts: list[dict],
+    ) -> tuple[torch.Tensor, int, int]:
+        """Original hinge mask via branch probe sampling (expensive)."""
+        hinge_mask = torch.zeros_like(shifted_labels, dtype=torch.bool)
+        total_probed = 0
+        total_positive = 0
 
         for i, rollout in enumerate(rollouts):
             sl = student_logits_full[i].detach()
@@ -219,11 +226,50 @@ class CausalHingeOPSD(OPSDTrainer):
                     hinge_mask[i, pos] = True
                     total_positive += 1
 
-        # If no hinge positions found, fall back to standard loss on all positions
+        return hinge_mask, total_probed, total_positive
+
+    def train_step(self, batch: dict) -> dict:
+        """CH-OPD training step with hinge masking."""
+        problems = batch["problems"]
+        solutions = batch["solutions"]
+
+        self.model.eval()
+        rollouts = self.generate_rollouts(problems, solutions)
+        self.model.train()
+
+        if not rollouts:
+            warnings.warn(f"Step {self.step}: rollout generation returned empty — skipping update")
+            return {"loss": 0.0, "reward_mean": 0.0}
+
+        student_ids, student_mask, labels = self._build_student_inputs(rollouts)
+        teacher_ids, teacher_mask, _ = self._build_teacher_inputs(rollouts)
+
+        student_out = self.model(input_ids=student_ids, attention_mask=student_mask)
+        student_logits_full = student_out.logits[:, :-1, :]
+
+        with torch.no_grad():
+            teacher_out = self.model(input_ids=teacher_ids, attention_mask=teacher_mask)
+            teacher_logits_full = teacher_out.logits[:, :-1, :]
+
+        shifted_labels = labels[:, 1:]
+        min_len = min(student_logits_full.shape[1], teacher_logits_full.shape[1], shifted_labels.shape[1])
+        student_logits_full = student_logits_full[:, :min_len, :]
+        teacher_logits_full = teacher_logits_full[:, :min_len, :]
+        shifted_labels = shifted_labels[:, :min_len]
+
+        if self.ch_config.use_logit_benefit:
+            hinge_mask, total_probed, total_positive = self._build_logit_hinge_mask(
+                student_logits_full, teacher_logits_full, shifted_labels, rollouts
+            )
+        else:
+            hinge_mask, total_probed, total_positive = self._build_probe_hinge_mask(
+                student_logits_full, teacher_logits_full, shifted_labels, rollouts
+            )
+
+        # If no hinge positions found, fall back to standard loss on all labeled positions
         if not hinge_mask.any():
             effective_labels = shifted_labels
         else:
-            # Only train on hinge positions
             effective_labels = shifted_labels.clone()
             effective_labels[~hinge_mask] = -100
 

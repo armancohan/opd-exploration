@@ -49,6 +49,9 @@ def parse_args():
     p.add_argument("--beta_fed", type=float, default=0.5)
     p.add_argument("--tau_value", type=float, default=0.3)
     p.add_argument("--lambda_within", type=float, default=0.1)
+    p.add_argument("--use_rollout_strategies", action=argparse.BooleanOptionalAction, default=True,
+                   help="Reuse existing rollouts as strategy set (fast). "
+                        "--no-use_rollout_strategies samples new anchor continuations.")
     return p.parse_args()
 
 
@@ -115,6 +118,7 @@ def main():
         beta_fed=cfg.get("beta_fed", 0.5),
         tau_value=cfg.get("tau_value", 0.3),
         lambda_within=cfg.get("lambda_within", 0.1),
+        use_rollout_strategies=cfg.get("use_rollout_strategies", True),
         max_grad_norm=cfg.get("max_grad_norm", 1.0),
     )
 
