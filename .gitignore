@@ -7,19 +7,39 @@ __pycache__/
 dist/
 build/
 
-# model outputs and checkpoints
+# model outputs, checkpoints, and weight files
 outputs/
 *.bin
 *.safetensors
 *.gguf
+*.pt
+*.pth
 
-# eval results (tracked separately or large)
+# eval result JSON (large, not source)
 eval/results/*.json
 
 # logs
 *.log
 *.out
+nohup.out
 
-# env
+# secrets and environment
 .env
+.env.*
+
+# W&B
 wandb/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
