@@ -50,10 +50,10 @@ COMMON_ARGS=(
     --n_train_samples "$N_TRAIN"
     --max_steps "$STEPS"
     --n_rollouts 4
-    --batch_size 2
+    --batch_size 1
     --lr 5e-6
     --max_completion_length 1024
-    --gradient_accumulation_steps 2
+    --gradient_accumulation_steps 4
     --beta 0.0
     --temperature 1.1
     --eval_dataset "aime2024"
@@ -65,6 +65,9 @@ COMMON_ARGS=(
 if [ -n "$WANDB_PROJECT" ]; then
     COMMON_ARGS+=(--wandb_project "$WANDB_PROJECT")
 fi
+
+# Prevent CUDA allocator fragmentation (especially important at high memory pressure)
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 # --- Base OPSD ---
 CUDA_VISIBLE_DEVICES="$GPUS_OPSD" torchrun \

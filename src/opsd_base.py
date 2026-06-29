@@ -41,37 +41,55 @@ def _compute_jsd(
     labels: torch.Tensor | None,
     beta: float = 0.0,
     temperature: float = 1.0,
+    chunk_size: int = 128,
 ) -> torch.Tensor:
-    """Generalized JSD loss. beta=0 → reverse KL(student||teacher)."""
+    """Generalized JSD loss, chunked over the sequence dimension.
+
+    Qwen3 has a 152K vocab, so materializing [B, T, V] all at once (~3.5 GB per
+    tensor at T=1536, B=8) quickly exhausts GPU memory. Processing in chunks of
+    chunk_size tokens keeps peak allocation to [B, chunk_size, V] ≈ 300 MB.
+    """
     sl = student_logits / temperature
     tl = teacher_logits / temperature
-
-    log_ps = F.log_softmax(sl, dim=-1)
-    log_pt = F.log_softmax(tl, dim=-1)
-
-    if beta == 0.0:
-        # Reverse KL: E_teacher[log p_T - log p_S]
-        loss = F.kl_div(log_ps, log_pt, reduction="none", log_target=True)
-    elif beta == 1.0:
-        loss = F.kl_div(log_pt, log_ps, reduction="none", log_target=True)
-    else:
-        b = torch.tensor(beta, dtype=log_ps.dtype, device=log_ps.device)
-        log_mix = torch.logsumexp(
-            torch.stack([log_ps + torch.log1p(-b), log_pt + torch.log(b)]), dim=0
-        )
-        loss = b * F.kl_div(log_mix, log_pt, reduction="none", log_target=True) + (1 - b) * F.kl_div(
-            log_mix, log_ps, reduction="none", log_target=True
-        )
-
-    # Sum over vocab dim
-    loss = loss.sum(dim=-1)  # [B, T]
+    B, T, _ = sl.shape
 
     if labels is not None:
-        mask = labels != -100
-        loss = loss[mask].mean()
-    else:
-        loss = loss.mean()
-    return loss
+        mask = labels != -100  # [B, T]
+
+    total_loss = sl.new_zeros(1).squeeze()
+    n_valid = 0
+
+    for start in range(0, T, chunk_size):
+        end = min(start + chunk_size, T)
+        sl_c = sl[:, start:end]   # [B, chunk, V]
+        tl_c = tl[:, start:end]
+
+        log_ps_c = F.log_softmax(sl_c, dim=-1)
+        log_pt_c = F.log_softmax(tl_c, dim=-1)
+
+        if beta == 0.0:
+            loss_c = F.kl_div(log_ps_c, log_pt_c, reduction="none", log_target=True)
+        elif beta == 1.0:
+            loss_c = F.kl_div(log_pt_c, log_ps_c, reduction="none", log_target=True)
+        else:
+            b = torch.tensor(beta, dtype=log_ps_c.dtype, device=log_ps_c.device)
+            log_mix = torch.logsumexp(
+                torch.stack([log_ps_c + torch.log1p(-b), log_pt_c + torch.log(b)]), dim=0
+            )
+            loss_c = b * F.kl_div(log_mix, log_pt_c, reduction="none", log_target=True) + \
+                     (1 - b) * F.kl_div(log_mix, log_ps_c, reduction="none", log_target=True)
+
+        loss_c = loss_c.sum(dim=-1)  # [B, chunk]
+
+        if labels is not None:
+            mask_c = mask[:, start:end]
+            total_loss = total_loss + loss_c[mask_c].sum()
+            n_valid += int(mask_c.sum())
+        else:
+            total_loss = total_loss + loss_c.sum()
+            n_valid += loss_c.numel()
+
+    return total_loss / max(n_valid, 1)
 
 
 class OPSDTrainer:
@@ -293,6 +311,8 @@ class OPSDTrainer:
         shifted_labels = shifted_labels[:, :min_len]
 
         loss = self.compute_jsd_loss(student_logits, teacher_logits, shifted_labels)
+        del teacher_logits
+        torch.cuda.empty_cache()
         loss = loss / self.config.gradient_accumulation_steps
         self.accelerator.backward(loss)
 

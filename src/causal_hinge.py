@@ -274,6 +274,8 @@ class CausalHingeOPSD(OPSDTrainer):
             effective_labels[~hinge_mask] = -100
 
         loss = self.compute_jsd_loss(student_logits_full, teacher_logits_full, effective_labels)
+        del teacher_logits_full
+        torch.cuda.empty_cache()
         loss = loss / self.config.gradient_accumulation_steps
         self.accelerator.backward(loss)
 
