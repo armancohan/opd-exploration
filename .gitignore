@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# model outputs and checkpoints
+outputs/
+*.bin
+*.safetensors
+*.gguf
+
+# eval results (tracked separately or large)
+eval/results/*.json
+
+# logs
+*.log
+*.out
+
+# env
+.env
+wandb/
