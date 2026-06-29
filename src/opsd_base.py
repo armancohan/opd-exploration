@@ -33,6 +33,9 @@ class OPSDConfig:
     max_prompt_len: int = 512
     output_dir: str = "outputs/base_opsd"
     wandb_project: str | None = None
+    # Outcome-Gated OPD: skip distillation on successful rollouts (reward=1).
+    # Failed rollouts still receive full JSD supervision. Zero extra cost.
+    outcome_gate: bool = False
 
 
 def _compute_jsd(
@@ -310,6 +313,18 @@ class OPSDTrainer:
         teacher_logits = teacher_logits[:, :min_len, :]
         shifted_labels = shifted_labels[:, :min_len]
 
+        # Outcome-Gated OPD: zero out successful rollouts so their tokens
+        # don't contribute to the distillation loss.  The student found a
+        # correct path on its own; pulling it toward the teacher's style risks
+        # corrupting that path.  Only failed rollouts (reward=0) receive
+        # distillation supervision.
+        n_gated = 0
+        if self.config.outcome_gate:
+            for i, r in enumerate(rollouts):
+                if r["reward"] > 0.5:
+                    shifted_labels[i] = -100
+                    n_gated += 1
+
         loss = self.compute_jsd_loss(student_logits, teacher_logits, shifted_labels)
         del teacher_logits
         torch.cuda.empty_cache()
@@ -323,11 +338,14 @@ class OPSDTrainer:
 
         self.step += 1
         reward_mean = sum(r["reward"] for r in rollouts) / len(rollouts)
-        return {
+        metrics = {
             "loss": loss.item() * self.config.gradient_accumulation_steps,
             "reward_mean": reward_mean,
             "n_rollouts": len(rollouts),
         }
+        if self.config.outcome_gate:
+            metrics["gated_fraction"] = n_gated / max(len(rollouts), 1)
+        return metrics
 
     def evaluate(self, dataset: list[dict], n_rollouts: int = 4) -> dict:
         """Evaluate pass@1 on dataset."""

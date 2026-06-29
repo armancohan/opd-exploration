@@ -41,6 +41,8 @@ def parse_args():
     p.add_argument("--weight_decay", type=float, default=0.01)
     p.add_argument("--max_grad_norm", type=float, default=1.0)
     p.add_argument("--max_prompt_len", type=int, default=512)
+    p.add_argument("--outcome_gate", action=argparse.BooleanOptionalAction, default=False,
+                   help="OG-OPD: skip distillation on successful rollouts (reward=1).")
     return p.parse_args()
 
 
@@ -99,6 +101,7 @@ def main():
         output_dir=cfg["output_dir"],
         wandb_project=cfg.get("wandb_project"),
         max_grad_norm=cfg.get("max_grad_norm", 1.0),
+        outcome_gate=cfg.get("outcome_gate", False),
     )
 
     trainer = OPSDTrainer(model, tokenizer, optimizer, accelerator, opsd_config)
