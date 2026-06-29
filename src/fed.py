@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import warnings
 from dataclasses import dataclass
 from typing import Any
 
@@ -99,14 +100,20 @@ class FEDConfig(OPSDConfig):
     beta_fed: float = 0.5
     tau_value: float = 0.3
     lambda_within: float = 0.1
+    # Max tokens for anchor continuations; defaults to max_completion_length // 2
+    anchor_max_new_tokens: int | None = None
 
 
 class FEDTrainer(OPSDTrainer):
     def __init__(self, *args, config: FEDConfig, ref_model=None, **kwargs):
         super().__init__(*args, config=config, **kwargs)
         self.fed_config = config
-        # Reference model: frozen copy of initial weights (or same if not provided)
         self.ref_model = ref_model
+        if ref_model is None:
+            warnings.warn(
+                "FEDTrainer: ref_model is None — within-class diversity preservation is disabled. "
+                "Pass a frozen copy of the initial model to enable it."
+            )
 
     def _get_ref_logits(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         """Get reference model logits (frozen initial policy)."""
@@ -114,7 +121,6 @@ class FEDTrainer(OPSDTrainer):
             with torch.no_grad():
                 out = self.ref_model(input_ids=input_ids, attention_mask=attention_mask)
                 return out.logits
-        # Fall back to current model (no diversity preservation without ref model)
         with torch.no_grad():
             out = self.model(input_ids=input_ids, attention_mask=attention_mask)
             return out.logits
@@ -134,14 +140,18 @@ class FEDTrainer(OPSDTrainer):
         prefixes = prefix.unsqueeze(0).repeat(n_continuations, 1)
         attn = torch.ones_like(prefixes)
 
+        anchor_tokens = (
+            self.fed_config.anchor_max_new_tokens
+            or self.fed_config.max_completion_length // 2
+        )
         with torch.no_grad():
             generated = unwrapped.generate(
                 input_ids=prefixes,
                 attention_mask=attn,
-                max_new_tokens=self.fed_config.max_completion_length // 2,
+                max_new_tokens=anchor_tokens,
                 do_sample=True,
                 temperature=self.config.temperature,
-                top_p=0.95,
+                top_p=self.config.top_p,
                 pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
                 use_cache=True,
             )
@@ -263,6 +273,7 @@ class FEDTrainer(OPSDTrainer):
         self.model.train()
 
         if not rollouts:
+            warnings.warn(f"Step {self.step}: rollout generation returned empty — skipping update")
             return {"loss": 0.0, "reward_mean": 0.0}
 
         student_ids, student_mask, labels = self._build_student_inputs(rollouts)
@@ -318,7 +329,7 @@ class FEDTrainer(OPSDTrainer):
         self.accelerator.backward(loss)
 
         if (self.step + 1) % self.config.gradient_accumulation_steps == 0:
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config.max_grad_norm)
             self.optimizer.step()
             self.optimizer.zero_grad()
 

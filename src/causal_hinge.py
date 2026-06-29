@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -19,6 +20,9 @@ class CHConfig(OPSDConfig):
     n_probes: int = 2
     max_probe_tokens: int = 150
     tau_benefit: float = 0.0
+    # TopK_S ∪ TopK_T can produce up to n_candidates*2 unique tokens; this cap
+    # prevents an unbounded candidate set when distributions are very spread.
+    max_candidates_multiplier: int = 2
 
 
 def _token_kl(student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
@@ -86,8 +90,7 @@ class CausalHingeOPSD(OPSDTrainer):
         top_t = torch.topk(pt, k=min(n_candidates, pt.shape[0])).indices
         sampled_token = prefix_ids[position].unsqueeze(0) if position < prefix_ids.shape[0] else top_s[:1]
         candidates = torch.unique(torch.cat([top_s, top_t, sampled_token]))
-        # Limit candidates
-        candidates = candidates[:n_candidates * 2]
+        candidates = candidates[:n_candidates * self.ch_config.max_candidates_multiplier]
 
         # Build forced prefixes: [original_prefix_up_to_t][candidate_token]
         prefix_up_to_t = prefix_ids[:position + 1].clone()
@@ -125,7 +128,7 @@ class CausalHingeOPSD(OPSDTrainer):
                 max_new_tokens=max_cont_tokens,
                 do_sample=True,
                 temperature=self.config.temperature,
-                top_p=0.95,
+                top_p=self.config.top_p,
                 pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
                 use_cache=True,
             )
@@ -167,6 +170,7 @@ class CausalHingeOPSD(OPSDTrainer):
         self.model.train()
 
         if not rollouts:
+            warnings.warn(f"Step {self.step}: rollout generation returned empty — skipping update")
             return {"loss": 0.0, "reward_mean": 0.0}
 
         student_ids, student_mask, labels = self._build_student_inputs(rollouts)
@@ -228,7 +232,7 @@ class CausalHingeOPSD(OPSDTrainer):
         self.accelerator.backward(loss)
 
         if (self.step + 1) % self.config.gradient_accumulation_steps == 0:
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config.max_grad_norm)
             self.optimizer.step()
             self.optimizer.zero_grad()
 

@@ -38,6 +38,8 @@ def parse_args():
     p.add_argument("--eval_steps", type=int, default=25)
     p.add_argument("--wandb_project", type=str, default=None)
     p.add_argument("--wandb_run_name", type=str, default=None)
+    p.add_argument("--weight_decay", type=float, default=0.01)
+    p.add_argument("--max_grad_norm", type=float, default=1.0)
     p.add_argument("--max_prompt_len", type=int, default=512)
     # FED-specific
     p.add_argument("--n_anchor_positions", type=int, default=2)
@@ -89,7 +91,7 @@ def main():
     for p in ref_model.parameters():
         p.requires_grad_(False)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=0.01)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg.get("weight_decay", 0.01))
     model, optimizer = accelerator.prepare(model, optimizer)
     ref_model = accelerator.prepare(ref_model)
 
@@ -112,6 +114,7 @@ def main():
         beta_fed=cfg.get("beta_fed", 0.5),
         tau_value=cfg.get("tau_value", 0.3),
         lambda_within=cfg.get("lambda_within", 0.1),
+        max_grad_norm=cfg.get("max_grad_norm", 1.0),
     )
 
     trainer = FEDTrainer(model, tokenizer, optimizer, accelerator, config=fed_config, ref_model=ref_model)

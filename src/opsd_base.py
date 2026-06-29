@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -21,8 +22,11 @@ class OPSDConfig:
     n_rollouts: int = 4
     batch_size: int = 2
     max_completion_length: int = 1024
+    eval_max_new_tokens: int | None = None  # defaults to max_completion_length if None
     beta: float = 0.0          # 0=reverse KL, 1=forward KL, 0.5=JSD
     temperature: float = 1.1
+    top_p: float = 0.95
+    max_grad_norm: float = 1.0
     gradient_accumulation_steps: int = 2
     max_steps: int = 100
     eval_steps: int = 25
@@ -114,8 +118,8 @@ class OPSDTrainer:
                     tokenize=False,
                     add_generation_prompt=True,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                warnings.warn(f"apply_chat_template failed for student prompt: {e}; using raw template")
 
             prompt_ids = self.tokenizer(
                 prompt_text, return_tensors="pt", truncation=True, max_length=self.config.max_prompt_len
@@ -132,7 +136,7 @@ class OPSDTrainer:
                     max_new_tokens=max_new_tokens,
                     temperature=self.config.temperature,
                     do_sample=True,
-                    top_p=0.95,
+                    top_p=self.config.top_p,
                     pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
                     use_cache=True,
                 )
@@ -190,8 +194,8 @@ class OPSDTrainer:
                     tokenize=False,
                     add_generation_prompt=True,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                warnings.warn(f"apply_chat_template failed for teacher prompt: {e}; using raw template")
 
             teacher_prompt_ids = self.tokenizer(
                 teacher_prompt,
@@ -263,6 +267,7 @@ class OPSDTrainer:
         self.model.train()
 
         if not rollouts:
+            warnings.warn(f"Step {self.step}: rollout generation returned empty — skipping update")
             return {"loss": 0.0, "reward_mean": 0.0}
 
         # Build inputs
@@ -292,7 +297,7 @@ class OPSDTrainer:
         self.accelerator.backward(loss)
 
         if (self.step + 1) % self.config.gradient_accumulation_steps == 0:
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config.max_grad_norm)
             self.optimizer.step()
             self.optimizer.zero_grad()
 
@@ -308,10 +313,11 @@ class OPSDTrainer:
         """Evaluate pass@1 on dataset."""
         self.model.eval()
         all_correct = []
+        eval_tokens = self.config.eval_max_new_tokens or self.config.max_completion_length
 
         for item in dataset:
             rollouts = self.generate_rollouts(
-                [item["problem"]], [item["solution"]], n_rollouts=n_rollouts, max_new_tokens=512
+                [item["problem"]], [item["solution"]], n_rollouts=n_rollouts, max_new_tokens=eval_tokens
             )
             rewards = [r["reward"] for r in rollouts]
             # pass@1: mean reward across rollouts

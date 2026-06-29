@@ -37,6 +37,8 @@ def parse_args():
     p.add_argument("--eval_steps", type=int, default=25)
     p.add_argument("--wandb_project", type=str, default=None)
     p.add_argument("--wandb_run_name", type=str, default=None)
+    p.add_argument("--weight_decay", type=float, default=0.01)
+    p.add_argument("--max_grad_norm", type=float, default=1.0)
     p.add_argument("--max_prompt_len", type=int, default=512)
     # CH-specific
     p.add_argument("--n_probe_positions", type=int, default=2)
@@ -82,7 +84,7 @@ def main():
         attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager",
     )
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=0.01)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg.get("weight_decay", 0.01))
     model, optimizer = accelerator.prepare(model, optimizer)
 
     ch_config = CHConfig(
@@ -103,6 +105,7 @@ def main():
         n_probes=cfg.get("n_probes", 2),
         max_probe_tokens=cfg.get("max_probe_tokens", 150),
         tau_benefit=cfg.get("tau_benefit", 0.0),
+        max_grad_norm=cfg.get("max_grad_norm", 1.0),
     )
 
     trainer = CausalHingeOPSD(model, tokenizer, optimizer, accelerator, config=ch_config)

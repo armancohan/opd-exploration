@@ -148,7 +148,7 @@ def run_eval_hf(
                 for text in texts:
                     pred = extract_boxed(text)
                     generations.append({
-                        "text": text[:500],  # truncate for storage
+                        "text": text[:2000],
                         "predicted": pred,
                         "correct": grade(pred, prob["answer"]),
                     })

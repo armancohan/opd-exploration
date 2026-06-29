@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import warnings
 from dataclasses import dataclass
 from typing import Any
 
@@ -51,10 +52,13 @@ def load_aime_dataset(years: list[int] = None) -> list[dict]:
     for year in years:
         try:
             ds = load_dataset(f"Maxwell-Jia/AIME_{year}", split="train")
-        except Exception:
+        except Exception as e:
+            warnings.warn(f"Maxwell-Jia/AIME_{year} not available ({e}); trying HuggingFaceH4 fallback")
+            fallback = "HuggingFaceH4/aime_2024" if year == 2024 else f"yentinglin/aime_{year}"
             try:
-                ds = load_dataset("lighteval/AIME_2024", split="train")
-            except Exception:
+                ds = load_dataset(fallback, split="train", trust_remote_code=True)
+            except Exception as e2:
+                warnings.warn(f"All AIME_{year} sources failed ({e2}); skipping year {year}")
                 continue
         for item in ds:
             problem = item.get("problem") or item.get("question", "")
@@ -75,7 +79,12 @@ def load_math500_dataset() -> list[dict]:
                 "solution": item.get("solution", ""),
             })
         return problems[:500]
-    except Exception:
+    except Exception as e:
+        warnings.warn(
+            f"lighteval/MATH not available ({e}); falling back to hendrycks/competition_math. "
+            "This is a random 500-sample subset and is NOT the canonical MATH-500 benchmark — "
+            "results will not be comparable to published numbers."
+        )
         ds = load_dataset("hendrycks/competition_math", split="test", trust_remote_code=True)
         problems = []
         for item in ds:
@@ -105,7 +114,8 @@ class MathDataCollator:
                 return self.tokenizer.apply_chat_template(
                     msgs, tokenize=False, add_generation_prompt=True
                 )
-            except Exception:
+            except Exception as e:
+                warnings.warn(f"apply_chat_template failed in collator: {e}; using raw content")
                 return msgs[0]["content"]
 
         student_prompts = [
