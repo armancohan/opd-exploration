@@ -61,13 +61,28 @@ def run(args):
         tf_prompt = apply_chat_template(
             tokenizer, TEACHER_PROMPT_TEMPLATE.format(problem=problem, solution=solution))
 
+        # Batched generation: all k rollouts in one generate() call (left-padded).
+        tokenizer.padding_side = "left"
+        enc = tokenizer([student_prompt] * args.k_rollouts, return_tensors="pt",
+                        padding=True, truncation=True,
+                        max_length=args.max_prompt_len).to(device)
+        with torch.no_grad():
+            out = model.generate(
+                input_ids=enc.input_ids, attention_mask=enc.attention_mask,
+                max_new_tokens=args.max_new_tokens, do_sample=True,
+                temperature=0.8, top_p=0.95,
+                pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+                use_cache=True)
+        gen = out[:, enc.input_ids.shape[1]:].cpu()
+        eos_id = tokenizer.eos_token_id
         rollout_texts, rollout_ids_list = [], []
-        for _ in range(args.k_rollouts):
-            comp_ids, comp_text, _ = generate_rollout(
-                model, tokenizer, student_prompt,
-                args.max_new_tokens, args.max_prompt_len, device)
-            rollout_texts.append(comp_text)
-            rollout_ids_list.append(comp_ids)
+        for i in range(args.k_rollouts):
+            row = gen[i]
+            eos_idx = (row == eos_id).nonzero(as_tuple=True)[0]
+            if len(eos_idx) > 0:
+                row = row[: eos_idx[0].item() + 1]  # cut at first EOS, drop trailing pad
+            rollout_ids_list.append(row)
+            rollout_texts.append(tokenizer.decode(row, skip_special_tokens=True))
 
         rewards = batch_verify(rollout_texts, [solution] * args.k_rollouts)
         n_correct = sum(1 for r in rewards if r > 0.5)

@@ -93,15 +93,16 @@ def load_aime_dataset(years: list[int] = None) -> list[dict]:
 
 
 def load_math500_dataset() -> list[dict]:
-    """Load MATH-500 benchmark."""
+    """Load the canonical MATH-500 benchmark (HuggingFaceH4/MATH-500)."""
+    # Primary: the canonical 500-problem MATH-500 split (cached locally).
+    try:
+        ds = load_dataset("HuggingFaceH4/MATH-500", split="test", trust_remote_code=True)
+        return [{"problem": x.get("problem", ""), "solution": x.get("solution", "")} for x in ds]
+    except Exception as e_primary:
+        warnings.warn(f"HuggingFaceH4/MATH-500 not available ({e_primary}); trying lighteval/MATH.")
     try:
         ds = load_dataset("lighteval/MATH", split="test", trust_remote_code=True)
-        problems = []
-        for item in ds:
-            problems.append({
-                "problem": item.get("problem", ""),
-                "solution": item.get("solution", ""),
-            })
+        problems = [{"problem": x.get("problem", ""), "solution": x.get("solution", "")} for x in ds]
         return problems[:500]
     except Exception as e:
         warnings.warn(
@@ -110,12 +111,7 @@ def load_math500_dataset() -> list[dict]:
             "results will not be comparable to published numbers."
         )
         ds = load_dataset("hendrycks/competition_math", split="test", trust_remote_code=True)
-        problems = []
-        for item in ds:
-            problems.append({
-                "problem": item.get("problem", ""),
-                "solution": item.get("solution", ""),
-            })
+        problems = [{"problem": x.get("problem", ""), "solution": x.get("solution", "")} for x in ds]
         random.shuffle(problems)
         return problems[:500]
 

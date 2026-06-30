@@ -116,17 +116,23 @@ def main():
     trainer = PSDTrainer(model, tokenizer, optimizer, accelerator, psd_config)
 
     train_data = load_train_dataset(cfg["dataset"], n_samples=cfg["n_train_samples"])
-    eval_data = []
-    if cfg["eval_dataset"] == "aime2024":
-        eval_data = load_aime_dataset([2024])
-    elif cfg["eval_dataset"] == "aime2025":
-        eval_data = load_aime_dataset([2025])
-    elif cfg["eval_dataset"] == "math500":
-        eval_data = load_math500_dataset()
+    def _load_eval(name):
+        if name == "aime2024":
+            return load_aime_dataset([2024])
+        if name == "aime2025":
+            return load_aime_dataset([2025])
+        if name == "math500":
+            return load_math500_dataset()
+        raise ValueError(f"unknown eval dataset: {name}")
+
+    # --eval_dataset may be a comma-separated list, e.g. "aime2024,math500"
+    eval_sets = {n.strip(): _load_eval(n.strip())
+                 for n in cfg["eval_dataset"].split(",") if n.strip()}
 
     if accelerator.is_main_process:
+        sizes = {k: len(v) for k, v in eval_sets.items()}
         print(
-            f"PSD | model={model_name} | train={len(train_data)} | eval={len(eval_data)} "
+            f"PSD | model={model_name} | train={len(train_data)} | eval={sizes} "
             f"| buffer_size={psd_config.buffer_size} | strategy={psd_config.buffer_strategy}"
         )
 
@@ -157,17 +163,24 @@ def main():
                 import wandb
                 wandb.log({"train/" + k: v for k, v in metrics.items()}, step=step)
 
-        if eval_data and (step + 1) % cfg["eval_steps"] == 0:
-            eval_subset = eval_data[:min(30, len(eval_data))]
-            eval_metrics = trainer.evaluate(eval_subset)
+        if eval_sets and (step + 1) % cfg["eval_steps"] == 0:
+            step_result = {"step": step + 1}
+            log_metrics = {}
+            for name, data in eval_sets.items():
+                eval_subset = data[:min(30, len(data))]
+                em = trainer.evaluate(eval_subset)  # runs on all ranks
+                if accelerator.is_main_process:
+                    print(f"Step {step+1} eval[{name}]: pass@1={em['pass@1']:.3f}")
+                    for k, v in em.items():
+                        step_result[f"{name}/{k}"] = v
+                        log_metrics[f"eval/{name}/{k}"] = v
             if accelerator.is_main_process:
-                print(f"Step {step+1} eval: pass@1={eval_metrics['pass@1']:.3f}")
-                results.append({"step": step + 1, **eval_metrics})
+                results.append(step_result)
                 with open(os.path.join(cfg["output_dir"], "results.json"), "w") as f:
                     json.dump(results, f, indent=2)
                 if cfg.get("wandb_project"):
                     import wandb
-                    wandb.log({"eval/" + k: v for k, v in eval_metrics.items()}, step=step + 1)
+                    wandb.log(log_metrics, step=step + 1)
 
     if accelerator.is_main_process:
         unwrapped = accelerator.unwrap_model(model)
