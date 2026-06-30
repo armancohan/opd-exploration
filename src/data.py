@@ -27,13 +27,14 @@ def load_train_dataset(
     name: str = "siyanzhao/Openthoughts_math_30k_opsd",
     n_samples: int = 0,
     seed: int = 42,
+    split: str = "train",
 ) -> list[dict]:
     """Load training problems with solutions.
 
     For siyanzhao/Openthoughts_math_30k_opsd (OPSD paper dataset), filters to
     correct==True examples only. n_samples=0 means use the full dataset.
     """
-    ds = load_dataset(name, split="train")
+    ds = load_dataset(name, split=split)
     ds = ds.shuffle(seed=seed)
 
     problems = []

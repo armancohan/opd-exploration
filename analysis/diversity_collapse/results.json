@@ -1,0 +1,887 @@
+{
+  "n_problems": 10,
+  "k_rollouts": 12,
+  "mean_unique_approaches_per_problem": 1.2,
+  "mean_dominant_fraction": 0.9833333333333332,
+  "mean_distillation_pressure": 0.29200000000000004,
+  "mean_early_position_pressure": 0.34416666666666673,
+  "ref_matches_dominant_approach_rate": 0.4,
+  "overall_approach_distribution": {
+    "algebraic": 118,
+    "other": 2
+  },
+  "per_problem": [
+    {
+      "problem_idx": 0,
+      "n_unique_approaches": 2,
+      "approach_counts": {
+        "algebraic": 11,
+        "other": 1
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 0.9166666666666666,
+      "ref_approach": "combinatorial",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.04171118885278702
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.31,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.0464082770049572
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.365,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.04100005328655243
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.33,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.04832257702946663
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.355,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.040074218064546585
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.255,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.030452441424131393
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.38,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.03683064132928848
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.325,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.04087190702557564
+        },
+        {
+          "approach": "other",
+          "pressure_frac": 0.295,
+          "early_pressure_frac": 0.3,
+          "mean_jsd": 0.029643554240465164
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.45,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.043520450592041016
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.37,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.043473463505506516
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.35,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.028159918263554573
+        }
+      ],
+      "mean_pressure": 0.3416666666666666,
+      "mean_early_pressure": 0.37083333333333335,
+      "mean_jsd": 0.03920572421823939
+    },
+    {
+      "problem_idx": 1,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "other",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.08,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05083369091153145
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.1,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.057228393852710724
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.11,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05725400149822235
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.12,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.052663203328847885
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.11,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05256767198443413
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.105,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05969782918691635
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.1,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05708444491028786
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.115,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.04984743520617485
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.09,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05681182071566582
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.1,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.0738503634929657
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.095,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.061427727341651917
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.095,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.06678847968578339
+        }
+      ],
+      "mean_pressure": 0.10166666666666667,
+      "mean_early_pressure": 0.05000000000000001,
+      "mean_jsd": 0.058004588509599365
+    },
+    {
+      "problem_idx": 2,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "algebraic",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.27,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.04905550554394722
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.27,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.06151837855577469
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.325,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.07619330286979675
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.335,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.057922858744859695
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.28,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.04962485283613205
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.29,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.05168022960424423
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.325,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.06817186623811722
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.225,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.05199946090579033
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.29,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.055729836225509644
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.07742896676063538
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.27,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.07463466376066208
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.0765114575624466
+        }
+      ],
+      "mean_pressure": 0.295,
+      "mean_early_pressure": 0.4000000000000001,
+      "mean_jsd": 0.06253928163399299
+    },
+    {
+      "problem_idx": 3,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "coordinate",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.405,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.014926991425454617
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.41,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.030513877049088478
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.030109096318483353
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.375,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.028476672247052193
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.365,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.016112424433231354
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.021296944469213486
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.35,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.020241206511855125
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.38,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.017076537013053894
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.365,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.021569617092609406
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.355,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.026932841166853905
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.36,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.022761108353734016
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.02528674155473709
+        }
+      ],
+      "mean_pressure": 0.36666666666666664,
+      "mean_early_pressure": 0.5499999999999999,
+      "mean_jsd": 0.022942004802947242
+    },
+    {
+      "problem_idx": 4,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "other",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.135,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.058510735630989075
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.115,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.07991426438093185
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.14,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.06636001914739609
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.075,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05862083286046982
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.12,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.060312606394290924
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.095,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.05558943748474121
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.085,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.06292922794818878
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.145,
+          "early_pressure_frac": 0.1,
+          "mean_jsd": 0.06783177703619003
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.09,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.058103010058403015
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.155,
+          "early_pressure_frac": 0.1,
+          "mean_jsd": 0.05149421840906143
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.125,
+          "early_pressure_frac": 0.05,
+          "mean_jsd": 0.06582966446876526
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.13,
+          "early_pressure_frac": 0.1,
+          "mean_jsd": 0.05596639961004257
+        }
+      ],
+      "mean_pressure": 0.11749999999999998,
+      "mean_early_pressure": 0.0625,
+      "mean_jsd": 0.061788516119122505
+    },
+    {
+      "problem_idx": 5,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "algebraic",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.38,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.029606277123093605
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.39,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.05775053799152374
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.38,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.03579198196530342
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.31,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.040156468749046326
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.375,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.05456816777586937
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.04562845081090927
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.39,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.07057260721921921
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.38,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.051561031490564346
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.375,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.031470827758312225
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.365,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.05710500851273537
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.335,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.04966914281249046
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.335,
+          "early_pressure_frac": 0.5,
+          "mean_jsd": 0.046549443155527115
+        }
+      ],
+      "mean_pressure": 0.36333333333333334,
+      "mean_early_pressure": 0.48333333333333334,
+      "mean_jsd": 0.04753582878038287
+    },
+    {
+      "problem_idx": 6,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "other",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.425,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.014170706272125244
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.325,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.019185014069080353
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.36,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.018372567370533943
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.017095481976866722
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.34,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.023434314876794815
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.014543125405907631
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.305,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.01662341132760048
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.31,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.018233442679047585
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.375,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.015737520530819893
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.37,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.012703917920589447
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.36,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.01571732945740223
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.32,
+          "early_pressure_frac": 0.25,
+          "mean_jsd": 0.016644306480884552
+        }
+      ],
+      "mean_pressure": 0.3458333333333334,
+      "mean_early_pressure": 0.25,
+      "mean_jsd": 0.01687176153063774
+    },
+    {
+      "problem_idx": 7,
+      "n_unique_approaches": 2,
+      "approach_counts": {
+        "other": 1,
+        "algebraic": 11
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 0.9166666666666666,
+      "ref_approach": "algebraic",
+      "rollout_pressure": [
+        {
+          "approach": "other",
+          "pressure_frac": 0.345,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.039373427629470825
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.28,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.04629923403263092
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.3,
+          "mean_jsd": 0.02798207476735115
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.27,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.04591907560825348
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.46,
+          "early_pressure_frac": 0.6,
+          "mean_jsd": 0.039843205362558365
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.395,
+          "early_pressure_frac": 0.6,
+          "mean_jsd": 0.03213215619325638
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.42,
+          "early_pressure_frac": 0.6,
+          "mean_jsd": 0.03570905327796936
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.395,
+          "early_pressure_frac": 0.6,
+          "mean_jsd": 0.04331321269273758
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.35,
+          "early_pressure_frac": 0.35,
+          "mean_jsd": 0.039436887949705124
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.415,
+          "early_pressure_frac": 0.55,
+          "mean_jsd": 0.038603462278842926
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.325,
+          "early_pressure_frac": 0.3,
+          "mean_jsd": 0.0473831444978714
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.31,
+          "early_pressure_frac": 0.3,
+          "mean_jsd": 0.049112726002931595
+        }
+      ],
+      "mean_pressure": 0.3566666666666667,
+      "mean_early_pressure": 0.43749999999999994,
+      "mean_jsd": 0.040425638357798256
+    },
+    {
+      "problem_idx": 8,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "algebraic",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.32,
+          "early_pressure_frac": 0.2,
+          "mean_jsd": 0.023207366466522217
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.3,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.02668473869562149
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.3,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.01783476397395134
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.36,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.018245598301291466
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.255,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.025331303477287292
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.39,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.019589954987168312
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.020516257733106613
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.285,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.01819431222975254
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.305,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.024267397820949554
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.01573180966079235
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.38,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.01826711930334568
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.2,
+          "early_pressure_frac": 0.4,
+          "mean_jsd": 0.02570871263742447
+        }
+      ],
+      "mean_pressure": 0.3104166666666667,
+      "mean_early_pressure": 0.3875,
+      "mean_jsd": 0.021131611273934443
+    },
+    {
+      "problem_idx": 9,
+      "n_unique_approaches": 1,
+      "approach_counts": {
+        "algebraic": 12
+      },
+      "dominant_approach": "algebraic",
+      "dominant_frac": 1.0,
+      "ref_approach": "coordinate",
+      "rollout_pressure": [
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.305,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.03753285109996796
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.255,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.029139816761016846
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.23,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.041392840445041656
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.34,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.037768684327602386
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.325,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.037210848182439804
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.385,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.03714396804571152
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.365,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.039934076368808746
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.355,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.0397065244615078
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.3,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.03090278059244156
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.375,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.04057176038622856
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.315,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.03351045772433281
+        },
+        {
+          "approach": "algebraic",
+          "pressure_frac": 0.305,
+          "early_pressure_frac": 0.45,
+          "mean_jsd": 0.037510283291339874
+        }
+      ],
+      "mean_pressure": 0.32125,
+      "mean_early_pressure": 0.45,
+      "mean_jsd": 0.03686040764053663
+    }
+  ]
+}
