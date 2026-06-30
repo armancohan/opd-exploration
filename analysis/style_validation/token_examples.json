@@ -1,0 +1,1355 @@
+[
+  {
+    "problem": "When leaving for work, a mother tasked Misha, Petya, and Vasya with the following chores:\na) sweep the hallway floor;\nb) wash the dishes;\nc) buy bread;\nd) pay the electricity bill;\ne) take out the trash;\nf) vacuum the living room carpet.\nIn how many different ways can they distribute the tasks so th",
+    "answer": "540",
+    "rollout_preview": "<think>\nOkay, so I need to figure out how many different ways the mother can distribute these chores to Misha, Petya, and Vasya, with each boy doing at least one task. Let me start by understanding the problem properly.\n\nFirst, there are 6 tasks: a) sweep the hallway floor; b) wash the dishes; c) buy bread; d) pay the electricity bill; e) take out the trash; f) vacuum the living room carpet. These are six distinct tasks. The mother wants to assign each of these tasks to one of the three boys: Misha, Petya, or Vasya. However, each boy must do at least one task. So, the question is asking for th",
+    "positions": [
+      {
+        "position": 59,
+        "context_tail": " Vasya, with each boy doing at least one task. Let me start by understanding the problem properly.\n\nFirst, there are 6 tasks:",
+        "student_sampled_token": " a",
+        "jsd_full_student": 0.6891,
+        "jsd_answer_student": 0.0,
+        "jsd_full_answer": 0.6887,
+        "top5_student": [
+          [
+            " a",
+            1.0
+          ],
+          [
+            " sweeping",
+            0.0
+          ],
+          [
+            " sweep",
+            0.0
+          ],
+          [
+            " A",
+            0.0
+          ],
+          [
+            " cleaning",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " a",
+            0.999
+          ],
+          [
+            " sweeping",
+            0.0
+          ],
+          [
+            " sweep",
+            0.0
+          ],
+          [
+            " A",
+            0.0
+          ],
+          [
+            " cleaning",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " sweeping",
+            0.679
+          ],
+          [
+            " sweep",
+            0.321
+          ],
+          [
+            " a",
+            0.0
+          ],
+          [
+            " cleaning",
+            0.0
+          ],
+          [
+            " swept",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 174,
+        "context_tail": " So, the question is asking for the number of ways to assign these six tasks to the three boys, with each boy getting at least one task.\n\n",
+        "student_sampled_token": "This",
+        "jsd_full_student": 0.6852,
+        "jsd_answer_student": 0.0378,
+        "jsd_full_answer": 0.6846,
+        "top5_student": [
+          [
+            "This",
+            0.574
+          ],
+          [
+            "Wait",
+            0.211
+          ],
+          [
+            "Hmm",
+            0.145
+          ],
+          [
+            "But",
+            0.037
+          ],
+          [
+            "I",
+            0.009
+          ]
+        ],
+        "top5_answer": [
+          [
+            "This",
+            0.338
+          ],
+          [
+            "Wait",
+            0.338
+          ],
+          [
+            "Hmm",
+            0.141
+          ],
+          [
+            "But",
+            0.11
+          ],
+          [
+            "At",
+            0.036
+          ]
+        ],
+        "top5_full": [
+          [
+            "The",
+            0.99
+          ],
+          [
+            "Now",
+            0.008
+          ],
+          [
+            "Hmm",
+            0.001
+          ],
+          [
+            "Let",
+            0.001
+          ],
+          [
+            "Alright",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 19,
+        "context_tail": "<think>\nOkay, so I need to figure out how many different ways the mother can distribute these",
+        "student_sampled_token": " chores",
+        "jsd_full_student": 0.6403,
+        "jsd_answer_student": 0.0013,
+        "jsd_full_answer": 0.6499,
+        "top5_student": [
+          [
+            " chores",
+            0.861
+          ],
+          [
+            " tasks",
+            0.117
+          ],
+          [
+            " six",
+            0.018
+          ],
+          [
+            " ",
+            0.005
+          ],
+          [
+            " eight",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " chores",
+            0.885
+          ],
+          [
+            " tasks",
+            0.093
+          ],
+          [
+            " six",
+            0.013
+          ],
+          [
+            " ",
+            0.009
+          ],
+          [
+            " eight",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " six",
+            0.992
+          ],
+          [
+            " ",
+            0.007
+          ],
+          [
+            " chores",
+            0.001
+          ],
+          [
+            " tasks",
+            0.0
+          ],
+          [
+            "6",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 232,
+        "context_tail": " set of size k is k! * S(n, k), where S(n, k) is the Stirling numbers of the second kind. But",
+        "student_sampled_token": " wait",
+        "jsd_full_student": 0.5598,
+        "jsd_answer_student": 0.0022,
+        "jsd_full_answer": 0.5654,
+        "top5_student": [
+          [
+            " let",
+            0.537
+          ],
+          [
+            " wait",
+            0.418
+          ],
+          [
+            " I",
+            0.027
+          ],
+          [
+            " since",
+            0.011
+          ],
+          [
+            " maybe",
+            0.007
+          ]
+        ],
+        "top5_answer": [
+          [
+            " let",
+            0.595
+          ],
+          [
+            " wait",
+            0.361
+          ],
+          [
+            " I",
+            0.03
+          ],
+          [
+            " maybe",
+            0.007
+          ],
+          [
+            " since",
+            0.007
+          ]
+        ],
+        "top5_full": [
+          [
+            " since",
+            0.458
+          ],
+          [
+            " maybe",
+            0.357
+          ],
+          [
+            " I",
+            0.131
+          ],
+          [
+            " in",
+            0.023
+          ],
+          [
+            " wait",
+            0.018
+          ]
+        ]
+      },
+      {
+        "position": 234,
+        "context_tail": " size k is k! * S(n, k), where S(n, k) is the Stirling numbers of the second kind. But wait,",
+        "student_sampled_token": " let",
+        "jsd_full_student": 0.4592,
+        "jsd_answer_student": 0.004,
+        "jsd_full_answer": 0.4945,
+        "top5_student": [
+          [
+            " let",
+            0.744
+          ],
+          [
+            " actually",
+            0.114
+          ],
+          [
+            " since",
+            0.054
+          ],
+          [
+            " in",
+            0.042
+          ],
+          [
+            " or",
+            0.033
+          ]
+        ],
+        "top5_answer": [
+          [
+            " let",
+            0.809
+          ],
+          [
+            " actually",
+            0.075
+          ],
+          [
+            " since",
+            0.036
+          ],
+          [
+            " in",
+            0.036
+          ],
+          [
+            " or",
+            0.031
+          ]
+        ],
+        "top5_full": [
+          [
+            " in",
+            0.465
+          ],
+          [
+            " since",
+            0.362
+          ],
+          [
+            " maybe",
+            0.081
+          ],
+          [
+            " actually",
+            0.038
+          ],
+          [
+            " here",
+            0.02
+          ]
+        ]
+      },
+      {
+        "position": 105,
+        "context_tail": " bread; d) pay the electricity bill; e) take out the trash; f) vacuum the living room carpet. These are six distinct tasks.",
+        "student_sampled_token": " The",
+        "jsd_full_student": 0.3825,
+        "jsd_answer_student": 0.0008,
+        "jsd_full_answer": 0.3823,
+        "top5_student": [
+          [
+            " The",
+            0.985
+          ],
+          [
+            " Each",
+            0.007
+          ],
+          [
+            " And",
+            0.007
+          ],
+          [
+            " We",
+            0.001
+          ],
+          [
+            " There",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " The",
+            0.977
+          ],
+          [
+            " And",
+            0.014
+          ],
+          [
+            " Each",
+            0.007
+          ],
+          [
+            " We",
+            0.001
+          ],
+          [
+            " But",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " Each",
+            0.774
+          ],
+          [
+            " The",
+            0.222
+          ],
+          [
+            " And",
+            0.004
+          ],
+          [
+            " They",
+            0.0
+          ],
+          [
+            " There",
+            0.0
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Let \\( f(x) = x - \\frac{x^3}{2} + \\frac{x^5}{2 \\cdot 4} - \\frac{x^7}{2 \\cdot 4 \\cdot 6} + \\cdots \\), and \\( g(x) = 1 + \\frac{x^2}{2^2} + \\frac{x^4}{2^2 \\cdot 4^2} + \\frac{x^6}{2^2 \\cdot 4^2 \\cdot 6^2} + \\cdots \\). Find \\( \\int_{0}^{\\infty} f(x) g(x) \\, dx \\).",
+    "answer": "\\sqrt{e",
+    "rollout_preview": "<think>\nOkay, let's try to tackle this problem. So, we have two functions, f(x) and g(x), defined as infinite series, and we need to find the integral from 0 to infinity of their product, f(x)g(x) dx. Hmm, okay. Let me start by understanding what these functions are.\n\nFirst, let's write down what f(x) and g(x) are:\n\nf(x) = x - x\u00b3/2 + x\u2075/(2\u00b74) - x\u2077/(2\u00b74\u00b76) + ...\ng(x) = 1 + x\u00b2/2\u00b2 + x\u2074/(2\u00b2\u00b74\u00b2) + x\u2076/(2\u00b2\u00b74\u00b2\u00b76\u00b2) + ...\n\nI need to figure out what these series represent. Maybe they are known Taylor series or something related to e^x or other functions? Let me check.\n\nLooking at f(x): the coefficients a",
+    "positions": [
+      {
+        "position": 0,
+        "context_tail": "",
+        "student_sampled_token": "<think>",
+        "jsd_full_student": 0.6931,
+        "jsd_answer_student": 0.0,
+        "jsd_full_answer": 0.6931,
+        "top5_student": [
+          [
+            "<think>",
+            1.0
+          ],
+          [
+            "</think>",
+            0.0
+          ],
+          [
+            "<|im_start|>",
+            0.0
+          ],
+          [
+            "<|im_end|>",
+            0.0
+          ],
+          [
+            "</tool_response>",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            "<think>",
+            1.0
+          ],
+          [
+            "</think>",
+            0.0
+          ],
+          [
+            "<|im_start|>",
+            0.0
+          ],
+          [
+            "<|im_end|>",
+            0.0
+          ],
+          [
+            "</tool_response>",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            "!\n",
+            0.622
+          ],
+          [
+            "!",
+            0.377
+          ],
+          [
+            " !\n",
+            0.0
+          ],
+          [
+            "!)\n",
+            0.0
+          ],
+          [
+            " !",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 2,
+        "context_tail": "<think>\n",
+        "student_sampled_token": "Okay",
+        "jsd_full_student": 0.6931,
+        "jsd_answer_student": 0.0,
+        "jsd_full_answer": 0.6931,
+        "top5_student": [
+          [
+            "Okay",
+            1.0
+          ],
+          [
+            "Alright",
+            0.0
+          ],
+          [
+            "Yes",
+            0.0
+          ],
+          [
+            "</think>",
+            0.0
+          ],
+          [
+            "OK",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            "Okay",
+            1.0
+          ],
+          [
+            "Alright",
+            0.0
+          ],
+          [
+            "</think>",
+            0.0
+          ],
+          [
+            "Yes",
+            0.0
+          ],
+          [
+            "OK",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            "  ",
+            1.0
+          ],
+          [
+            " ",
+            0.0
+          ],
+          [
+            "   ",
+            0.0
+          ],
+          [
+            "1",
+            0.0
+          ],
+          [
+            "   \n",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 166,
+        "context_tail": "\u00b74\u00b2) + x\u2076/(2\u00b2\u00b74\u00b2\u00b76\u00b2) + ...\n\nI need to figure out what these series represent.",
+        "student_sampled_token": " Maybe",
+        "jsd_full_student": 0.6928,
+        "jsd_answer_student": 0.0005,
+        "jsd_full_answer": 0.6928,
+        "top5_student": [
+          [
+            " Maybe",
+            0.908
+          ],
+          [
+            " They",
+            0.075
+          ],
+          [
+            " It",
+            0.017
+          ],
+          [
+            " Perhaps",
+            0.0
+          ],
+          [
+            " These",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " Maybe",
+            0.924
+          ],
+          [
+            " They",
+            0.059
+          ],
+          [
+            " It",
+            0.017
+          ],
+          [
+            " Perhaps",
+            0.0
+          ],
+          [
+            " These",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " The",
+            0.999
+          ],
+          [
+            " Then",
+            0.0
+          ],
+          [
+            " \n\n",
+            0.0
+          ],
+          [
+            " Let",
+            0.0
+          ],
+          [
+            " From",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 156,
+        "context_tail": "/2\u00b2 + x\u2074/(2\u00b2\u00b74\u00b2) + x\u2076/(2\u00b2\u00b74\u00b2\u00b76\u00b2) + ...\n\n",
+        "student_sampled_token": "I",
+        "jsd_full_student": 0.677,
+        "jsd_answer_student": 0.0002,
+        "jsd_full_answer": 0.6774,
+        "top5_student": [
+          [
+            "Hmm",
+            0.469
+          ],
+          [
+            "So",
+            0.285
+          ],
+          [
+            "I",
+            0.222
+          ],
+          [
+            "Looking",
+            0.021
+          ],
+          [
+            "Alright",
+            0.002
+          ]
+        ],
+        "top5_answer": [
+          [
+            "Hmm",
+            0.471
+          ],
+          [
+            "So",
+            0.286
+          ],
+          [
+            "I",
+            0.222
+          ],
+          [
+            "Looking",
+            0.016
+          ],
+          [
+            "Alright",
+            0.002
+          ]
+        ],
+        "top5_full": [
+          [
+            "The",
+            0.851
+          ],
+          [
+            "And",
+            0.115
+          ],
+          [
+            "From",
+            0.016
+          ],
+          [
+            "Looking",
+            0.012
+          ],
+          [
+            "Then",
+            0.003
+          ]
+        ]
+      },
+      {
+        "position": 157,
+        "context_tail": "2\u00b2 + x\u2074/(2\u00b2\u00b74\u00b2) + x\u2076/(2\u00b2\u00b74\u00b2\u00b76\u00b2) + ...\n\nI",
+        "student_sampled_token": " need",
+        "jsd_full_student": 0.6114,
+        "jsd_answer_student": 0.0018,
+        "jsd_full_answer": 0.6085,
+        "top5_student": [
+          [
+            " need",
+            0.621
+          ],
+          [
+            " notice",
+            0.377
+          ],
+          [
+            " remember",
+            0.001
+          ],
+          [
+            " think",
+            0.001
+          ],
+          [
+            " recognize",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " need",
+            0.677
+          ],
+          [
+            " notice",
+            0.32
+          ],
+          [
+            " remember",
+            0.002
+          ],
+          [
+            " think",
+            0.001
+          ],
+          [
+            " recognize",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " remember",
+            0.948
+          ],
+          [
+            " need",
+            0.037
+          ],
+          [
+            " think",
+            0.006
+          ],
+          [
+            " recall",
+            0.006
+          ],
+          [
+            " notice",
+            0.001
+          ]
+        ]
+      },
+      {
+        "position": 71,
+        "context_tail": " to infinity of their product, f(x)g(x) dx. Hmm, okay. Let me start by understanding what these functions are.\n\nFirst,",
+        "student_sampled_token": " let",
+        "jsd_full_student": 0.5827,
+        "jsd_answer_student": 0.0008,
+        "jsd_full_answer": 0.5901,
+        "top5_student": [
+          [
+            " let",
+            0.88
+          ],
+          [
+            " looking",
+            0.119
+          ],
+          [
+            " f",
+            0.001
+          ],
+          [
+            " the",
+            0.0
+          ],
+          [
+            " for",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " let",
+            0.903
+          ],
+          [
+            " looking",
+            0.095
+          ],
+          [
+            " f",
+            0.001
+          ],
+          [
+            " the",
+            0.001
+          ],
+          [
+            " for",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " the",
+            0.848
+          ],
+          [
+            " looking",
+            0.115
+          ],
+          [
+            " for",
+            0.02
+          ],
+          [
+            " let",
+            0.009
+          ],
+          [
+            " f",
+            0.007
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Someone writes a letter to each of 6 different recipients and prepares 6 envelopes with the recipients' names and addresses on them. In how many ways can the letters be placed in the envelopes such that no letter matches the recipient on the envelope?",
+    "answer": "265",
+    "rollout_preview": "<think>\nOkay, so I need to figure out how many ways there are to put 6 letters into 6 envelopes so that no letter ends up in the envelope with the same recipient. Hmm, this sounds like a classic problem. I remember something about permutations where no element appears in its original position. Let me think.\n\nFirst, let me recall. If we have n items and we want to arrange them so that none is in its original position, that's called a derangement. Yes, derangements! So, the problem is asking for the number of derangements of 6 elements. \n\nBut wait, how do you calculate derangements? I think ther",
+    "positions": [
+      {
+        "position": 158,
+        "context_tail": " you calculate derangements? I think there's a formula for that. Let me try to remember. I think it's something like n! times",
+        "student_sampled_token": " (",
+        "jsd_full_student": 0.6796,
+        "jsd_answer_student": 0.0,
+        "jsd_full_answer": 0.6789,
+        "top5_student": [
+          [
+            " (",
+            1.0
+          ],
+          [
+            " the",
+            0.0
+          ],
+          [
+            " something",
+            0.0
+          ],
+          [
+            " [",
+            0.0
+          ],
+          [
+            " a",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " (",
+            0.999
+          ],
+          [
+            " the",
+            0.001
+          ],
+          [
+            " something",
+            0.0
+          ],
+          [
+            " [",
+            0.0
+          ],
+          [
+            " a",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " the",
+            0.994
+          ],
+          [
+            " (",
+            0.004
+          ],
+          [
+            " a",
+            0.001
+          ],
+          [
+            " this",
+            0.001
+          ],
+          [
+            " some",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 123,
+        "context_tail": " called a derangement. Yes, derangements! So, the problem is asking for the number of derangements of 6 elements. \n\n",
+        "student_sampled_token": "But",
+        "jsd_full_student": 0.6733,
+        "jsd_answer_student": 0.1143,
+        "jsd_full_answer": 0.3339,
+        "top5_student": [
+          [
+            "But",
+            0.981
+          ],
+          [
+            "I",
+            0.011
+          ],
+          [
+            "The",
+            0.006
+          ],
+          [
+            "Now",
+            0.002
+          ],
+          [
+            "Wait",
+            0.001
+          ]
+        ],
+        "top5_answer": [
+          [
+            "But",
+            0.652
+          ],
+          [
+            "The",
+            0.308
+          ],
+          [
+            "I",
+            0.032
+          ],
+          [
+            "Now",
+            0.003
+          ],
+          [
+            "Wait",
+            0.002
+          ]
+        ],
+        "top5_full": [
+          [
+            "The",
+            0.998
+          ],
+          [
+            "Now",
+            0.002
+          ],
+          [
+            "But",
+            0.0
+          ],
+          [
+            "In",
+            0.0
+          ],
+          [
+            "Looking",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 45,
+        "context_tail": " to put 6 letters into 6 envelopes so that no letter ends up in the envelope with the same recipient. Hmm, this sounds like a classic",
+        "student_sampled_token": " problem",
+        "jsd_full_student": 0.6634,
+        "jsd_answer_student": 0.0013,
+        "jsd_full_answer": 0.6506,
+        "top5_student": [
+          [
+            " problem",
+            0.993
+          ],
+          [
+            " permutation",
+            0.005
+          ],
+          [
+            " der",
+            0.001
+          ],
+          [
+            " comb",
+            0.0
+          ],
+          [
+            " probl\u00e8me",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " problem",
+            0.983
+          ],
+          [
+            " permutation",
+            0.01
+          ],
+          [
+            " der",
+            0.006
+          ],
+          [
+            " permutations",
+            0.001
+          ],
+          [
+            " comb",
+            0.001
+          ]
+        ],
+        "top5_full": [
+          [
+            " der",
+            0.991
+          ],
+          [
+            " problem",
+            0.009
+          ],
+          [
+            " comb",
+            0.0
+          ],
+          [
+            " derivative",
+            0.0
+          ],
+          [
+            " probl\u00e8me",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 55,
+        "context_tail": " that no letter ends up in the envelope with the same recipient. Hmm, this sounds like a classic problem. I remember something about permutations where no element",
+        "student_sampled_token": " appears",
+        "jsd_full_student": 0.641,
+        "jsd_answer_student": 0.0009,
+        "jsd_full_answer": 0.6258,
+        "top5_student": [
+          [
+            " appears",
+            0.998
+          ],
+          [
+            " is",
+            0.002
+          ],
+          [
+            " ends",
+            0.0
+          ],
+          [
+            " maps",
+            0.0
+          ],
+          [
+            " remains",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " appears",
+            0.992
+          ],
+          [
+            " is",
+            0.008
+          ],
+          [
+            " ends",
+            0.0
+          ],
+          [
+            " maps",
+            0.0
+          ],
+          [
+            " stays",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " is",
+            0.982
+          ],
+          [
+            " appears",
+            0.018
+          ],
+          [
+            " stays",
+            0.0
+          ],
+          [
+            " remains",
+            0.0
+          ],
+          [
+            " goes",
+            0.0
+          ]
+        ]
+      },
+      {
+        "position": 100,
+        "context_tail": ". If we have n items and we want to arrange them so that none is in its original position, that's called a derangement. Yes,",
+        "student_sampled_token": " der",
+        "jsd_full_student": 0.6266,
+        "jsd_answer_student": 0.0002,
+        "jsd_full_answer": 0.6327,
+        "top5_student": [
+          [
+            " der",
+            0.969
+          ],
+          [
+            " that",
+            0.023
+          ],
+          [
+            " exactly",
+            0.007
+          ],
+          [
+            " right",
+            0.001
+          ],
+          [
+            " the",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            " der",
+            0.974
+          ],
+          [
+            " that",
+            0.018
+          ],
+          [
+            " exactly",
+            0.007
+          ],
+          [
+            " right",
+            0.001
+          ],
+          [
+            " the",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " the",
+            0.296
+          ],
+          [
+            " exactly",
+            0.23
+          ],
+          [
+            " that",
+            0.23
+          ],
+          [
+            " so",
+            0.23
+          ],
+          [
+            " right",
+            0.008
+          ]
+        ]
+      },
+      {
+        "position": 46,
+        "context_tail": " put 6 letters into 6 envelopes so that no letter ends up in the envelope with the same recipient. Hmm, this sounds like a classic problem",
+        "student_sampled_token": ".",
+        "jsd_full_student": 0.6139,
+        "jsd_answer_student": 0.0,
+        "jsd_full_answer": 0.6138,
+        "top5_student": [
+          [
+            ".",
+            1.0
+          ],
+          [
+            "!",
+            0.0
+          ],
+          [
+            "...",
+            0.0
+          ],
+          [
+            ",",
+            0.0
+          ],
+          [
+            " in",
+            0.0
+          ]
+        ],
+        "top5_answer": [
+          [
+            ".",
+            1.0
+          ],
+          [
+            "!",
+            0.0
+          ],
+          [
+            "...",
+            0.0
+          ],
+          [
+            ",",
+            0.0
+          ],
+          [
+            " called",
+            0.0
+          ]
+        ],
+        "top5_full": [
+          [
+            " called",
+            0.735
+          ],
+          [
+            " about",
+            0.211
+          ],
+          [
+            ".",
+            0.037
+          ],
+          [
+            ",",
+            0.009
+          ],
+          [
+            " in",
+            0.007
+          ]
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "n_problems": 30,
+  "n_tokens": 7680,
+  "jsd": {
+    "full_vs_student   (total OPSD signal)": {
+      "mean": 0.03978455811738968,
+      "std": 0.11309552937746048,
+      "median": 1.686401265033055e-05
+    },
+    "answer_vs_student (weak answer-only)": {
+      "mean": 0.0024207821115851402,
+      "std": 0.022733058780431747,
+      "median": -3.375693680141012e-08
+    },
+    "minimal_vs_student(strong answer-only)": {
+      "mean": 0.0034001886378973722,
+      "std": 0.025964848697185516,
+      "median": 4.620957483325583e-08
+    },
+    "full_vs_answer    (style num, weak)": {
+      "mean": 0.03898623213171959,
+      "std": 0.11144344508647919,
+      "median": 1.8286027625435963e-05
+    },
+    "full_vs_minimal   (style num, strong)": {
+      "mean": 0.0375472716987133,
+      "std": 0.10901466012001038,
+      "median": 1.6279118426609784e-05
+    }
+  },
+  "style_fraction_raw_JSD": {
+    "weak_conditioner   (full,answer)/(full,student)": 0.9799337727136613,
+    "strong_conditioner (full,minimal)/(full,student)": 0.9437649549336463
+  },
+  "style_fraction_metric_sqrtJSD": {
+    "weak_conditioner": 0.9854695525560081,
+    "strong_conditioner": 0.9613727915475885
+  },
+  "answer_only_share_raw_JSD": {
+    "weak   (answer,student)/(full,student)": 0.060847279098646706,
+    "strong (minimal,student)/(full,student)": 0.08546503464647412
+  },
+  "non_additivity_gap": {
+    "_note": "(JSD(f,a)+JSD(a,s)-JSD(f,s))/JSD(f,s); raw JSD can be <0, metric sqrt must be >=0",
+    "raw_JSD_weak": 0.04078105181230808,
+    "raw_JSD_strong": 0.02922998958012043,
+    "metric_sqrt_weak": 0.16578667812318548
+  }
+}
